@@ -1,10 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -16,6 +20,8 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { Roles } from './decorators/user-role.decorator';
 import { UserRole } from 'src/utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { ObjectId } from 'typeorm';
 
 @Controller('api/users')
 export class UsersController {
@@ -39,5 +45,33 @@ export class UsersController {
   @UseGuards(AuthRolesGuard)
   public getAllUsers() {
     return this.usersService.getAll();
+  }
+  @Put()
+  @Roles(UserRole.ADMIN, UserRole.NORMAL_USER)
+  @UseGuards(AuthRolesGuard)
+  public updateUser(
+    @CurrentUser() payload: JWTPayloadType,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(payload.id, updateUserDto);
+  }
+  @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.NORMAL_USER)
+  @UseGuards(AuthRolesGuard)
+  public deleteUser(
+    @Param('id', ParseIntPipe) id: ObjectId,
+    @CurrentUser() payload: JWTPayloadType,
+  ) {
+    return this.usersService.delete(id, payload);
+  }
+  @Put('id/role')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(AuthRolesGuard)
+  public async changeUserRole(
+    @Param('id', ParseIntPipe) id: ObjectId,
+    @Body('newRole') newRole: UserRole,
+    @CurrentUser() payload: JWTPayloadType,
+  ) {
+    return this.usersService.changeUserRole(id, newRole, payload);
   }
 }

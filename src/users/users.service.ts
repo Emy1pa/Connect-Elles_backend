@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ObjectId, Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -7,6 +11,8 @@ import { RegisterDto } from './dtos/register.dto';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
 import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { UserRole } from 'src/utils/enums';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +27,7 @@ export class UsersService {
     const { username, fullName, email, password } = registerDto;
     const userFromDb = await this.userRepository.findOne({ where: { email } });
     if (userFromDb) throw new BadRequestException('User already registered');
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await this.HashPassword(password);
     let newUser = this.userRepository.create({
       username,
       fullName,
@@ -49,14 +54,55 @@ export class UsersService {
   }
   public async getCurrentUser(id: ObjectId): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new BadRequestException('Invalid email or password ');
+    if (!user) throw new BadRequestException('User not found');
     return user;
   }
   public getAll(): Promise<User[]> {
     return this.userRepository.find();
   }
 
+  public async update(id: ObjectId, updateUserDto: UpdateUserDto) {
+    const { password, fullName, username } = updateUserDto;
+    const user = await this.userRepository.findOne({ where: { id } });
+    user.username = username ?? user.username;
+    user.fullName = fullName ?? user.fullName;
+    if (password) {
+      user.password = await this.HashPassword(password);
+    }
+    return this.userRepository.save(user);
+  }
+
+  public async delete(userId: ObjectId, payload: JWTPayloadType) {
+    const user = await this.getCurrentUser(userId);
+    if (user.id === payload?.id || payload.userRole === UserRole.ADMIN) {
+      await this.userRepository.remove(user);
+      return { message: 'User has been deleted successfully' };
+    }
+    throw new ForbiddenException(
+      'You do not have permission to delete this user',
+    );
+  }
+
+  public async changeUserRole(
+    id: ObjectId,
+    newRole: UserRole,
+    payload: JWTPayloadType,
+  ): Promise<User> {
+    if (payload.userRole !== UserRole.ADMIN) {
+      throw new ForbiddenException(
+        'You do not have permission to change user roles',
+      );
+    }
+    const user = await this.getCurrentUser(id);
+    user.userRole = newRole;
+    return this.userRepository.save(user);
+  }
+
   private generateJWT(payload: JWTPayloadType) {
     return this.jwtService.signAsync(payload);
+  }
+  private async HashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
   }
 }

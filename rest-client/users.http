@@ -24,3 +24,25 @@ Content-Type: application/json
 ### GET CURRENT USER
 GET http://localhost:5000/api/users/current-user 
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlclR5cGUiOiJub3JtYWxfdXNlciIsImlhdCI6MTczNzgwNDI4NiwiZXhwIjoxNzQwMzk2Mjg2fQ.Idn9YAfXkEKjxGRc8K91bZt-RAz81zf-2EeWyZkfIOI
+
+
+### UPDATE USER
+PUT http://localhost:5000/api/users 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlclR5cGUiOiJhZG1pbiIsImlhdCI6MTczNzg4NzY3MSwiZXhwIjoxNzQwNDc5NjcxfQ.WluFQmPsGsao2SqShQQDb9sMhot_KE95kRtXZcV9MzM
+Content-Type: application/json
+
+{
+  "password": "password1234"
+}
+### DELETE USER
+DELETE  http://localhost:5000/api/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlclR5cGUiOiJhZG1pbiIsImlhdCI6MTczNzg4NzY3MSwiZXhwIjoxNzQwNDc5NjcxfQ.WluFQmPsGsao2SqShQQDb9sMhot_KE95kRtXZcV9MzM
+
+### CHANGE USER ROLE
+PUT http://localhost:5000/api/users/1/role
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlclR5cGUiOiJhZG1pbiIsImlhdCI6MTczNzg4NzY3MSwiZXhwIjoxNzQwNDc5NjcxfQ.WluFQmPsGsao2SqShQQDb9sMhot_KE95kRtXZcV9MzM
+Content-Type: application/json
+
+{
+  "newRole": "mentor"
+}
