@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import { UserRole } from 'src/utils/enums';
 import {
@@ -20,6 +21,7 @@ export class User {
   @Column({ type: 'varchar', length: '250', unique: true })
   email: string;
   @Column()
+  @Exclude()
   password: string;
   @Column({ type: 'enum', enum: UserRole, default: UserRole.NORMAL_USER })
   userRole: UserRole;
