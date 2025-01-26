@@ -6,51 +6,25 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { ObjectId, Repository } from 'typeorm';
 import { User } from './user.entity';
-import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dtos/register.dto';
-import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
 import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserRole } from 'src/utils/enums';
+import { AuthProvider } from './auth.provider';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly jwtService: JwtService,
+    private readonly authProvider: AuthProvider,
   ) {}
-  public async register(
-    registerDto: RegisterDto,
-  ): Promise<Omit<User, 'password'>> {
-    const { username, fullName, email, password } = registerDto;
-    const userFromDb = await this.userRepository.findOne({ where: { email } });
-    if (userFromDb) throw new BadRequestException('User already registered');
-    const hashedPassword = await this.HashPassword(password);
-    let newUser = this.userRepository.create({
-      username,
-      fullName,
-      email,
-      password: hashedPassword,
-    });
-    newUser = await this.userRepository.save(newUser);
-    const { password: _, ...userDetails } = newUser;
-    return userDetails;
+  public async register(registerDto: RegisterDto): Promise<User> {
+    return this.authProvider.register(registerDto);
   }
   public async login(loginDto: LoginDto): Promise<AccessTokenType> {
-    const { email, password } = loginDto;
-    const user = await this.userRepository.findOne({ where: { email } });
-    if (!user) throw new BadRequestException('Invalid email or password');
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatch)
-      throw new BadRequestException('Invalid email or password ');
-    const accessToken = await this.generateJWT({
-      id: user.id,
-      userRole: user.userRole,
-    });
-
-    return { accessToken };
+    return this.authProvider.login(loginDto);
   }
   public async getCurrentUser(id: ObjectId): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
@@ -67,7 +41,7 @@ export class UsersService {
     user.username = username ?? user.username;
     user.fullName = fullName ?? user.fullName;
     if (password) {
-      user.password = await this.HashPassword(password);
+      user.password = await this.authProvider.HashPassword(password);
     }
     return this.userRepository.save(user);
   }
@@ -96,13 +70,5 @@ export class UsersService {
     const user = await this.getCurrentUser(id);
     user.userRole = newRole;
     return this.userRepository.save(user);
-  }
-
-  private generateJWT(payload: JWTPayloadType) {
-    return this.jwtService.signAsync(payload);
-  }
-  private async HashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10);
-    return bcrypt.hash(password, salt);
   }
 }
