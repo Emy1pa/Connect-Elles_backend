@@ -1,0 +1,26 @@
+### GET ALL USERS
+GET http://localhost:5000/api/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlclR5cGUiOiJhZG1pbiIsImlhdCI6MTczNzg4NzY3MSwiZXhwIjoxNzQwNDc5NjcxfQ.WluFQmPsGsao2SqShQQDb9sMhot_KE95kRtXZcV9MzM
+
+### REGISTER NEW USER
+POST http://localhost:5000/api/users/auth/register 
+Content-Type: application/json
+
+{
+  "email": "imane@example.com",
+  "password": "password123",
+  "username": "youssef"
+}
+
+### LOGIN USER
+POST http://localhost:5000/api/users/auth/login 
+Content-Type: application/json
+
+{
+  "email": "imane@example.com",
+  "password": "password123"
+}
+
+### GET CURRENT USER
+GET http://localhost:5000/api/users/current-user 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlclR5cGUiOiJub3JtYWxfdXNlciIsImlhdCI6MTczNzgwNDI4NiwiZXhwIjoxNzQwMzk2Mjg2fQ.Idn9YAfXkEKjxGRc8K91bZt-RAz81zf-2EeWyZkfIOI

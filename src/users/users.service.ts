@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ObjectId, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dtos/register.dto';
@@ -47,6 +47,15 @@ export class UsersService {
 
     return { accessToken };
   }
+  public async getCurrentUser(id: ObjectId): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new BadRequestException('Invalid email or password ');
+    return user;
+  }
+  public getAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
   private generateJWT(payload: JWTPayloadType) {
     return this.jwtService.signAsync(payload);
   }
