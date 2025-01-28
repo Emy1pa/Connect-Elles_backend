@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Transform } from 'class-transformer';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import { UserRole } from 'src/utils/enums';
 import {
@@ -7,13 +7,15 @@ import {
   Entity,
   ObjectId,
   ObjectIdColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'users' })
 export class User {
   @ObjectIdColumn()
-  id: ObjectId;
+  @Transform(({ value }) => value.toString(), { toPlainOnly: true })
+  _id: ObjectId;
   @Column({ type: 'varchar', length: '150', nullable: true })
   username: string;
   @Column({ type: 'varchar', length: '150' })
@@ -40,4 +42,6 @@ export class User {
     default: () => CURRENT_TIMESTAMP,
   })
   updatedAt: Date;
+  @Column({ nullable: true, default: null })
+  profileImage: string;
 }

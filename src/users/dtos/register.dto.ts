@@ -14,13 +14,15 @@ export class RegisterDto {
   username?: string;
   @IsString()
   @IsNotEmpty()
-  @MaxLength(150)
+  @MinLength(3)
   fullName: string;
   @IsEmail()
   @IsNotEmpty()
-  @MaxLength(250)
   email: string;
   @IsNotEmpty()
   @MinLength(8)
   password: string;
+  @IsOptional()
+  @IsString()
+  profileImage?: string;
 }

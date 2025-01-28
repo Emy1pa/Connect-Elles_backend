@@ -17,14 +17,13 @@ POST http://localhost:5000/api/users/auth/login
 Content-Type: application/json
 
 {
-  "email": "imane@example.com",
+  "email": "souaouti.iman@gmail.com",
   "password": "password123"
 }
 
 ### GET CURRENT USER
 GET http://localhost:5000/api/users/current-user 
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlclR5cGUiOiJub3JtYWxfdXNlciIsImlhdCI6MTczNzgwNDI4NiwiZXhwIjoxNzQwMzk2Mjg2fQ.Idn9YAfXkEKjxGRc8K91bZt-RAz81zf-2EeWyZkfIOI
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OThmZTZiMjhkYzllYzMxODAwMTRhYSIsInVzZXJSb2xlIjoiYWRtaW4iLCJpYXQiOjE3MzgwODA0NzEsImV4cCI6MTc0MDY3MjQ3MX0.evL6P4O8NbMltEFbk6GglBVaguqFUQWwY1f2LWB_0dU
 
 ### UPDATE USER
 PUT http://localhost:5000/api/users 
