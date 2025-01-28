@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ObjectId, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
@@ -12,6 +12,9 @@ import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserRole } from 'src/utils/enums';
 import { AuthProvider } from './auth.provider';
+import { join } from 'path';
+import { unlinkSync } from 'fs';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class UsersService {
@@ -26,8 +29,17 @@ export class UsersService {
   public async login(loginDto: LoginDto): Promise<AccessTokenType> {
     return this.authProvider.login(loginDto);
   }
-  public async getCurrentUser(id: ObjectId): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  public async getCurrentUser(id: ObjectId | string): Promise<User> {
+    let objectId: ObjectId;
+    try {
+      objectId = typeof id === 'string' ? new ObjectId(id) : id;
+    } catch (error) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { _id: objectId },
+    });
     if (!user) throw new BadRequestException('User not found');
     return user;
   }
@@ -35,20 +47,39 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  public async update(id: ObjectId, updateUserDto: UpdateUserDto) {
-    const { password, fullName, username } = updateUserDto;
-    const user = await this.userRepository.findOne({ where: { id } });
+  public async update(id: string | ObjectId, updateUserDto: UpdateUserDto) {
+    const { password, fullName, username, profileImage } = updateUserDto;
+    let objectId: ObjectId;
+    try {
+      objectId = typeof id === 'string' ? new ObjectId(id) : id;
+    } catch (error) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { _id: objectId },
+    });
+
     user.username = username ?? user.username;
     user.fullName = fullName ?? user.fullName;
     if (password) {
       user.password = await this.authProvider.HashPassword(password);
     }
+    if (profileImage) {
+      if (user.profileImage) {
+        await this.removeProfileImage(id);
+      }
+      user.profileImage = profileImage;
+    }
     return this.userRepository.save(user);
   }
 
-  public async delete(userId: ObjectId, payload: JWTPayloadType) {
+  public async delete(userId: string | ObjectId, payload: JWTPayloadType) {
     const user = await this.getCurrentUser(userId);
-    if (user.id === payload?.id || payload.userRole === UserRole.ADMIN) {
+    if (
+      user._id.equals(new ObjectId(payload?.id)) ||
+      payload.userRole === UserRole.ADMIN
+    ) {
       await this.userRepository.remove(user);
       return { message: 'User has been deleted successfully' };
     }
@@ -58,7 +89,7 @@ export class UsersService {
   }
 
   public async changeUserRole(
-    id: ObjectId,
+    id: string | ObjectId,
     newRole: UserRole,
     payload: JWTPayloadType,
   ): Promise<User> {
@@ -70,5 +101,19 @@ export class UsersService {
     const user = await this.getCurrentUser(id);
     user.userRole = newRole;
     return this.userRepository.save(user);
+  }
+  public async removeProfileImage(userId: ObjectId | string) {
+    const user = await this.getCurrentUser(userId);
+    if (!user.profileImage) {
+      throw new BadRequestException('There is no profile image');
+    } else {
+      const imagePath = join(
+        process.cwd(),
+        `./images/users/${user.profileImage}`,
+      );
+      unlinkSync(imagePath);
+      user.profileImage = null;
+      return this.userRepository.save(user);
+    }
   }
 }

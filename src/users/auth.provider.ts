@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
 import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import { UserRole } from 'src/utils/enums';
 
 export class AuthProvider {
   constructor(
@@ -15,7 +16,7 @@ export class AuthProvider {
     private readonly jwtService: JwtService,
   ) {}
   public async register(registerDto: RegisterDto): Promise<User> {
-    const { username, fullName, email, password } = registerDto;
+    const { username, fullName, email, password, profileImage } = registerDto;
     const userFromDb = await this.userRepository.findOne({ where: { email } });
     if (userFromDb) throw new BadRequestException('User already registered');
     const hashedPassword = await this.HashPassword(password);
@@ -24,8 +25,13 @@ export class AuthProvider {
       fullName,
       email,
       password: hashedPassword,
+      profileImage: profileImage ? `/images/users/${profileImage}` : null,
+      userRole: UserRole.NORMAL_USER,
+      isAccountVerified: false,
+      isBanned: false,
     });
     newUser = await this.userRepository.save(newUser);
+
     return newUser;
   }
   public async login(loginDto: LoginDto): Promise<AccessTokenType> {
@@ -36,7 +42,7 @@ export class AuthProvider {
     if (!isPasswordMatch)
       throw new BadRequestException('Invalid email or password ');
     const accessToken = await this.generateJWT({
-      id: user.id,
+      id: user._id,
       userRole: user.userRole,
     });
 

@@ -6,10 +6,11 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Post,
   Put,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterDto } from './dtos/register.dto';
@@ -21,13 +22,24 @@ import { Roles } from './decorators/user-role.decorator';
 import { UserRole } from 'src/utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { ObjectId } from 'typeorm';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ObjectId } from 'mongodb'; // Changed from typeorm to mongodb
 
 @Controller('api/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Post('auth/register')
-  public register(@Body() registerDto: RegisterDto) {
+  @UseInterceptors(FileInterceptor('profileImage'))
+  public register(
+    @Body() registerDto: RegisterDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    console.log('File received:', file);
+
+    if (file) {
+      registerDto.profileImage = file.filename;
+      console.log('File saved as:', file.filename);
+    }
     return this.usersService.register(registerDto);
   }
   @Post('auth/login')
@@ -49,17 +61,25 @@ export class UsersController {
   @Put()
   @Roles(UserRole.ADMIN, UserRole.NORMAL_USER)
   @UseGuards(AuthRolesGuard)
+  @UseInterceptors(FileInterceptor('profileImage'))
   public updateUser(
     @CurrentUser() payload: JWTPayloadType,
     @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
+    console.log('File received:', file);
+
+    if (file) {
+      updateUserDto.profileImage = file.filename;
+      console.log(file.filename);
+    }
     return this.usersService.update(payload.id, updateUserDto);
   }
   @Delete(':id')
   @Roles(UserRole.ADMIN, UserRole.NORMAL_USER)
   @UseGuards(AuthRolesGuard)
   public deleteUser(
-    @Param('id', ParseIntPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @CurrentUser() payload: JWTPayloadType,
   ) {
     return this.usersService.delete(id, payload);
@@ -67,8 +87,9 @@ export class UsersController {
   @Put('id/role')
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthRolesGuard)
+  @UseInterceptors(FileInterceptor('profileImage'))
   public async changeUserRole(
-    @Param('id', ParseIntPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @Body('newRole') newRole: UserRole,
     @CurrentUser() payload: JWTPayloadType,
   ) {
