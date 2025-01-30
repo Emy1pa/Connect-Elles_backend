@@ -8,9 +8,12 @@ import { User } from './users/user.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { SkillsModule } from './skills/skills.module';
+import { Skill } from './skills/skill.entity';
 @Module({
   imports: [
     UsersModule,
+    SkillsModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -20,7 +23,7 @@ import { join } from 'path';
           useNewUrlParser: true,
           useUnifiedTopology: true,
           synchronize: true,
-          entities: [User],
+          entities: [User, Skill],
         };
       },
     }),

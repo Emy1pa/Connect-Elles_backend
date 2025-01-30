@@ -1,13 +1,16 @@
 import { Exclude, Transform } from 'class-transformer';
+import { Skill } from 'src/skills/skill.entity';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import { UserRole } from 'src/utils/enums';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ObjectId,
   ObjectIdColumn,
-  PrimaryGeneratedColumn,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -44,4 +47,6 @@ export class User {
   updatedAt: Date;
   @Column({ nullable: true, default: null })
   profileImage: string;
+  @OneToMany(() => Skill, (skill) => skill.user)
+  skills?: Skill[];
 }
