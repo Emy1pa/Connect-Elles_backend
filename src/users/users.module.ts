@@ -49,5 +49,6 @@ import { mkdirSync } from 'fs';
   ],
   providers: [AuthProvider, UsersService],
   controllers: [UsersController],
+  exports: [UsersService],
 })
 export class UsersModule {}
