@@ -1,4 +1,5 @@
 import { Exclude, Transform } from 'class-transformer';
+import { Category } from 'src/categories/category.entity';
 import { Skill } from 'src/skills/skill.entity';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import { UserRole } from 'src/utils/enums';
@@ -49,4 +50,6 @@ export class User {
   profileImage: string;
   @OneToMany(() => Skill, (skill) => skill.user)
   skills?: Skill[];
+  @OneToMany(() => Category, (category) => category.user)
+  categories?: Category[];
 }
