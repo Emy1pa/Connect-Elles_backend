@@ -10,10 +10,13 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { SkillsModule } from './skills/skills.module';
 import { Skill } from './skills/skill.entity';
+import { Category } from './categories/category.entity';
+import { CategoriesModule } from './categories/categories.module';
 @Module({
   imports: [
     UsersModule,
     SkillsModule,
+    CategoriesModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -23,7 +26,7 @@ import { Skill } from './skills/skill.entity';
           useNewUrlParser: true,
           useUnifiedTopology: true,
           synchronize: true,
-          entities: [User, Skill],
+          entities: [User, Skill, Category],
         };
       },
     }),
