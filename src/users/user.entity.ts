@@ -1,6 +1,7 @@
 import { Exclude, Transform } from 'class-transformer';
 import { Blog } from 'src/blogs/blog.entity';
 import { Category } from 'src/categories/category.entity';
+import { Service } from 'src/services/service.entity';
 import { Skill } from 'src/skills/skill.entity';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import { UserRole } from 'src/utils/enums';
@@ -54,4 +55,7 @@ export class User {
 
   @OneToMany(() => Blog, (blog) => blog.user)
   blogs: Blog[];
+
+  @OneToMany(() => Service, (service) => service.user)
+  services: Service[];
 }

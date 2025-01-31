@@ -9,3 +9,9 @@ export enum BlogStatus {
   PUBLISHED = 'published',
   ARCHIVED = 'archived',
 }
+export enum ServiceStatus {
+  AVAILABLE = 'available',
+  INACTIVE = 'inactive',
+  EXPIRED = 'expired',
+  NOT_AVAILABLE = 'not-available',
+}
