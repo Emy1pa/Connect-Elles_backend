@@ -12,11 +12,14 @@ import { SkillsModule } from './skills/skills.module';
 import { Skill } from './skills/skill.entity';
 import { Category } from './categories/category.entity';
 import { CategoriesModule } from './categories/categories.module';
+import { BlogsModule } from './blogs/blogs.module';
+import { Blog } from './blogs/blog.entity';
 @Module({
   imports: [
     UsersModule,
     SkillsModule,
     CategoriesModule,
+    BlogsModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -26,7 +29,7 @@ import { CategoriesModule } from './categories/categories.module';
           useNewUrlParser: true,
           useUnifiedTopology: true,
           synchronize: true,
-          entities: [User, Skill, Category],
+          entities: [User, Skill, Category, Blog],
         };
       },
     }),

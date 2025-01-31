@@ -4,11 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ObjectId, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Category } from './category.entity';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class CategoriesService {
