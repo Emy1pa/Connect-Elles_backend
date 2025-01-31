@@ -1,26 +1,26 @@
 import { BadRequestException, Module } from '@nestjs/common';
-import { BlogsService } from './blogs.service';
-import { BlogsController } from './blogs.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Blog } from './blog.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { CategoriesModule } from 'src/categories/categories.module';
+import { Service } from './service.entity';
+import { ServicesService } from './services.service';
+import { ServicesController } from './services.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { mkdirSync } from 'fs';
 import { join } from 'path';
+import { mkdirSync } from 'fs';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Blog]),
+    TypeOrmModule.forFeature([Service]),
     JwtModule,
     UsersModule,
     CategoriesModule,
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, callback) => {
-          const uploadPath = join(process.cwd(), 'images', 'blogs');
+          const uploadPath = join(process.cwd(), 'images', 'services');
           mkdirSync(uploadPath, { recursive: true });
           callback(null, uploadPath);
         },
@@ -40,7 +40,7 @@ import { join } from 'path';
       limits: { fileSize: 1024 * 1024 * 2 },
     }),
   ],
-  providers: [BlogsService],
-  controllers: [BlogsController],
+  providers: [ServicesService],
+  controllers: [ServicesController],
 })
-export class BlogsModule {}
+export class ServicesModule {}

@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { Blog } from 'src/blogs/blog.entity';
+import { Service } from 'src/services/service.entity';
 import { User } from 'src/users/user.entity';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import {
@@ -37,4 +38,7 @@ export class Category {
 
   @OneToMany(() => Blog, (blog) => blog.category)
   blogs: Blog[];
+
+  @OneToMany(() => Service, (service) => service.category)
+  services: Service[];
 }
