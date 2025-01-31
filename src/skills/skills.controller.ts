@@ -16,7 +16,7 @@ import { UserRole } from 'src/utils/enums';
 import { CreateSkillDto } from './dtos/create-skill.dto';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import { JWTPayloadType } from 'src/utils/types';
-import { ObjectId } from 'typeorm';
+import { ObjectId } from 'mongodb';
 import { UpdateSkillDto } from './dtos/update-skill.dto';
 
 @Controller('api/skills')
@@ -31,18 +31,19 @@ export class SkillsController {
   ) {
     return this.skillsService.CreateSkill(createSkill, paylod.id);
   }
+  @Get()
   public getAllSkills() {
     return this.skillsService.getAllSkills();
   }
   @Get(':id')
-  public getSingleSkill(@Param('id') id: ObjectId) {
+  public getSingleSkill(@Param('id') id: string) {
     return this.skillsService.getSkillBy(id);
   }
   @Put(':id')
   @UseGuards(AuthRolesGuard)
   @Roles(UserRole.MENTOR)
   public updateSkill(
-    @Param('id') id: ObjectId,
+    @Param('id') id: string,
     @Body() updateSkill: UpdateSkillDto,
   ) {
     return this.skillsService.updateSkill(id, updateSkill);
@@ -50,7 +51,7 @@ export class SkillsController {
   @Delete(':id')
   @UseGuards(AuthRolesGuard)
   @Roles(UserRole.MENTOR)
-  public deleteSkill(@Param('id') id: ObjectId) {
+  public deleteSkill(@Param('id') id: string) {
     return this.skillsService.deleteSkill(id);
   }
 }

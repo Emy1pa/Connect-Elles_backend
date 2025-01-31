@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Skill } from './skill.entity';
-import { ObjectId, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { CreateSkillDto } from './dtos/create-skill.dto';
 import { UpdateSkillDto } from './dtos/update-skill.dto';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class SkillsService {

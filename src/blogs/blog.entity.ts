@@ -1,7 +1,8 @@
 import { Transform } from 'class-transformer';
-import { Blog } from 'src/blogs/blog.entity';
+import { Category } from 'src/categories/category.entity';
 import { User } from 'src/users/user.entity';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
+import { BlogStatus } from 'src/utils/enums';
 import {
   Column,
   CreateDateColumn,
@@ -9,18 +10,24 @@ import {
   ManyToOne,
   ObjectId,
   ObjectIdColumn,
-  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'categories' })
-export class Category {
+@Entity({ name: 'blogs' })
+export class Blog {
   @ObjectIdColumn()
   @Transform(({ value }) => value.toString(), { toPlainOnly: true })
   _id: ObjectId;
-  @Column({ type: 'varchar', length: '100' })
+  @Column({ type: 'varchar', length: 100 })
   title: string;
-
+  @Column({ type: 'text' })
+  content: string;
+  @Column({ type: 'enum', enum: BlogStatus, default: BlogStatus.DRAFT })
+  status: BlogStatus;
+  @Column({ nullable: true, default: null })
+  blogImage?: string;
+  @Column({ type: 'varchar', length: '250' })
+  summary: string;
   @CreateDateColumn({
     type: 'timestamp',
     default: () => CURRENT_TIMESTAMP,
@@ -32,9 +39,10 @@ export class Category {
     default: () => CURRENT_TIMESTAMP,
   })
   updatedAt: Date;
-  @ManyToOne(() => User, (user) => user.categories)
+
+  @ManyToOne(() => User, (user) => user.blogs)
   user: User;
 
-  @OneToMany(() => Blog, (blog) => blog.category)
-  blogs: Blog[];
+  @ManyToOne(() => Category, (category) => category.blogs)
+  category: Category;
 }

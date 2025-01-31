@@ -1,4 +1,5 @@
 import { Exclude, Transform } from 'class-transformer';
+import { Blog } from 'src/blogs/blog.entity';
 import { Category } from 'src/categories/category.entity';
 import { Skill } from 'src/skills/skill.entity';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
@@ -7,8 +8,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   ObjectId,
   ObjectIdColumn,
   OneToMany,
@@ -52,4 +51,7 @@ export class User {
   skills?: Skill[];
   @OneToMany(() => Category, (category) => category.user)
   categories?: Category[];
+
+  @OneToMany(() => Blog, (blog) => blog.user)
+  blogs: Blog[];
 }
