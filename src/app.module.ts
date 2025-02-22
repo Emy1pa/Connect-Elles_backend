@@ -9,12 +9,16 @@ import { join } from 'path';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SkillsModule } from './skills/skills.module';
 import { CategoriesModule } from './categories/categories.module';
+import { BlogsModule } from './blogs/blogs.module';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
     UsersModule,
     SkillsModule,
     CategoriesModule,
+    BlogsModule,
+    ServicesModule,
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
