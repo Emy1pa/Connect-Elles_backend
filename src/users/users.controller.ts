@@ -23,9 +23,11 @@ import { UserRole } from 'src/utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ObjectId } from 'mongodb'; // Changed from typeorm to mongodb
+import { Types } from 'mongoose';
+import { ClassSerializerInterceptor } from '@nestjs/common';
 
 @Controller('api/users')
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Post('auth/register')
@@ -79,20 +81,9 @@ export class UsersController {
   @Roles(UserRole.ADMIN, UserRole.NORMAL_USER)
   @UseGuards(AuthRolesGuard)
   public deleteUser(
-    @Param('id') id: ObjectId,
+    @Param('id') id: string,
     @CurrentUser() payload: JWTPayloadType,
   ) {
     return this.usersService.delete(id, payload);
-  }
-  @Put('id/role')
-  @Roles(UserRole.ADMIN)
-  @UseGuards(AuthRolesGuard)
-  @UseInterceptors(FileInterceptor('profileImage'))
-  public async changeUserRole(
-    @Param('id') id: ObjectId,
-    @Body('newRole') newRole: UserRole,
-    @CurrentUser() payload: JWTPayloadType,
-  ) {
-    return this.usersService.changeUserRole(id, newRole, payload);
   }
 }
