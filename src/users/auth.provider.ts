@@ -1,48 +1,64 @@
 import { BadRequestException } from '@nestjs/common';
 import { RegisterDto } from './dtos/register.dto';
-import { User } from './user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { User, UserDocument } from './user.schema';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
-import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import { JWTPayloadType } from 'src/utils/types';
 import { UserRole } from 'src/utils/enums';
+import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 export class AuthProvider {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JwtService,
   ) {}
-  public async register(registerDto: RegisterDto): Promise<User> {
-    const { username, fullName, email, password, profileImage } = registerDto;
-    const userFromDb = await this.userRepository.findOne({ where: { email } });
-    if (userFromDb) throw new BadRequestException('User already registered');
-    const hashedPassword = await this.HashPassword(password);
-    let newUser = this.userRepository.create({
-      username,
-      fullName,
-      email,
-      password: hashedPassword,
-      profileImage: profileImage ? `/images/users/${profileImage}` : null,
-      userRole: UserRole.NORMAL_USER,
-      isAccountVerified: false,
-      isBanned: false,
-    });
-    newUser = await this.userRepository.save(newUser);
 
-    return newUser;
+  public async register(registerDto: RegisterDto) {
+    try {
+      const { username, fullName, email, password, profileImage } = registerDto;
+      const userFromDb = await this.userModel.findOne({ email });
+      if (userFromDb) throw new BadRequestException('User already registered');
+      const hashedPassword = await this.HashPassword(password);
+      let newUser = new this.userModel({
+        username,
+        fullName,
+        email,
+        password: hashedPassword,
+        profileImage: profileImage ? `/images/users/${profileImage}` : null,
+        userRole: UserRole.NORMAL_USER,
+        isBanned: false,
+      });
+      const savedUser = await newUser.save();
+      const userResponse = {
+        _id: savedUser._id.toString(),
+        username: savedUser.username,
+        fullName: savedUser.fullName,
+        email: savedUser.email,
+        profileImage: savedUser.profileImage,
+        userRole: savedUser.userRole,
+        isBanned: savedUser.isBanned,
+      };
+
+      return userResponse;
+    } catch (error) {
+      console.log('Registration failed', error);
+    }
   }
-  public async login(loginDto: LoginDto): Promise<AccessTokenType> {
+
+  public async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userModel.findOne({ email });
     if (!user) throw new BadRequestException('Invalid email or password');
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch)
       throw new BadRequestException('Invalid email or password ');
+
     const accessToken = await this.generateJWT({
-      id: user._id,
+      id: user._id.toString(),
       userRole: user.userRole,
     });
 

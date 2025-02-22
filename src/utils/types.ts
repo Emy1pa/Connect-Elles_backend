@@ -1,7 +1,5 @@
-import { ObjectId } from 'typeorm';
-
 export type JWTPayloadType = {
-  id: ObjectId;
+  id: string;
   userRole: string;
 };
 export type AccessTokenType = {

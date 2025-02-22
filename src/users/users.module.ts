@@ -3,13 +3,13 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user.entity';
 import { AuthProvider } from './auth.provider';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
+import { User, UserSchema } from './user.schema';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -23,7 +23,7 @@ import { mkdirSync } from 'fs';
         };
       },
     }),
-    TypeOrmModule.forFeature([User]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, callback) => {

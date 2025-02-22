@@ -5,13 +5,13 @@ export enum UserRole {
 }
 
 export enum BlogStatus {
-  DRAFT = 'draft',
-  PUBLISHED = 'published',
-  ARCHIVED = 'archived',
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
 }
 export enum ServiceStatus {
-  AVAILABLE = 'available',
-  INACTIVE = 'inactive',
-  EXPIRED = 'expired',
-  NOT_AVAILABLE = 'not-available',
+  AVAILABLE = 'AVAILABLE',
+  INACTIVE = 'INACTIVE',
+  EXPIRED = 'EXPIRED',
+  NOT_AVAILABLE = 'NOT-AVAILABLE',
 }

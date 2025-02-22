@@ -2,66 +2,57 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User, UserDocument } from './user.schema';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
-import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import { JWTPayloadType } from 'src/utils/types';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserRole } from 'src/utils/enums';
 import { AuthProvider } from './auth.provider';
 import { join } from 'path';
 import { unlinkSync } from 'fs';
-import { ObjectId } from 'mongodb';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly authProvider: AuthProvider,
   ) {}
-  public async register(registerDto: RegisterDto): Promise<User> {
+  public async register(registerDto: RegisterDto) {
     return this.authProvider.register(registerDto);
   }
-  public async login(loginDto: LoginDto): Promise<AccessTokenType> {
+  public async login(loginDto: LoginDto) {
     return this.authProvider.login(loginDto);
   }
-  public async getCurrentUser(id: ObjectId | string): Promise<User> {
-    let objectId: ObjectId;
-    try {
-      objectId = typeof id === 'string' ? new ObjectId(id) : id;
-    } catch (error) {
-      throw new BadRequestException('Invalid ID format');
-    }
+  public async getCurrentUser(id: string): Promise<UserDocument> {
+    const user = await this.userModel.findById(id).lean().exec();
 
-    const user = await this.userRepository.findOne({
-      where: { _id: objectId },
-    });
     if (!user) throw new BadRequestException('User not found');
+    user._id = user._id.toString();
+
     return user;
   }
-  public getAll(): Promise<User[]> {
-    return this.userRepository.find();
+  public async getAll(): Promise<User[]> {
+    const users = await this.userModel.find().lean().exec();
+    users.forEach((user) => {
+      user._id = user._id.toString();
+    });
+    return users;
   }
 
-  public async update(id: string | ObjectId, updateUserDto: UpdateUserDto) {
+  public async update(id: string, updateUserDto: UpdateUserDto) {
     const { password, fullName, username, profileImage } = updateUserDto;
-    let objectId: ObjectId;
-    try {
-      objectId = typeof id === 'string' ? new ObjectId(id) : id;
-    } catch (error) {
-      throw new BadRequestException('Invalid ID format');
-    }
 
-    const user = await this.userRepository.findOne({
-      where: { _id: objectId },
-    });
+    const user = await this.userModel.findById(id);
+    if (!user) throw new BadRequestException('User not found');
 
-    user.username = username ?? user.username;
-    user.fullName = fullName ?? user.fullName;
+    if (username) user.username = username;
+    if (fullName) user.fullName = fullName;
     if (password) {
       user.password = await this.authProvider.HashPassword(password);
     }
@@ -69,18 +60,33 @@ export class UsersService {
       if (user.profileImage) {
         await this.removeProfileImage(id);
       }
-      user.profileImage = profileImage;
+      user.profileImage = `/images/users/${profileImage}`;
     }
-    return this.userRepository.save(user);
+    const updatedUser = await user.save();
+    return {
+      _id: updatedUser._id.toString(),
+      username: updatedUser.username,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      profileImage: updatedUser.profileImage,
+      userRole: updatedUser.userRole,
+      isBanned: updatedUser.isBanned,
+    };
   }
 
-  public async delete(userId: string | ObjectId, payload: JWTPayloadType) {
+  public async delete(userId: string, payload: JWTPayloadType) {
     const user = await this.getCurrentUser(userId);
+
+    // const payloadId =
+    //   typeof payload.id === 'string'
+    //     ? new Types.ObjectId(payload.id)
+    //     : payload.id;
+
     if (
-      user._id.equals(new ObjectId(payload?.id)) ||
+      user._id.toString() === payload.id.toString() ||
       payload.userRole === UserRole.ADMIN
     ) {
-      await this.userRepository.remove(user);
+      await this.userModel.findByIdAndDelete(user._id);
       return { message: 'User has been deleted successfully' };
     }
     throw new ForbiddenException(
@@ -88,21 +94,7 @@ export class UsersService {
     );
   }
 
-  public async changeUserRole(
-    id: string | ObjectId,
-    newRole: UserRole,
-    payload: JWTPayloadType,
-  ): Promise<User> {
-    if (payload.userRole !== UserRole.ADMIN) {
-      throw new ForbiddenException(
-        'You do not have permission to change user roles',
-      );
-    }
-    const user = await this.getCurrentUser(id);
-    user.userRole = newRole;
-    return this.userRepository.save(user);
-  }
-  public async removeProfileImage(userId: ObjectId | string) {
+  public async removeProfileImage(userId: string) {
     const user = await this.getCurrentUser(userId);
     if (!user.profileImage) {
       throw new BadRequestException('There is no profile image');
@@ -113,7 +105,7 @@ export class UsersService {
       );
       unlinkSync(imagePath);
       user.profileImage = null;
-      return this.userRepository.save(user);
+      return user.save();
     }
   }
 }
