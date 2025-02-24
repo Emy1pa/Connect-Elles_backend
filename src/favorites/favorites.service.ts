@@ -63,4 +63,31 @@ export class FavoriteService {
       throw new BadRequestException('Failed to remove favorite');
     }
   }
+
+  async getUserFavorite(userId: string) {
+    try {
+      const existingUser = await this.userModel.findById(userId);
+      if (!existingUser) {
+        throw new NotFoundException('User not found');
+      }
+      const favorites = await this.favoriteModel
+        .find({
+          user: new Types.ObjectId(userId),
+        })
+        .populate('blog', '_id title')
+        .lean()
+        .exec();
+      return favorites.map((fav) => ({
+        _id: fav._id.toString(),
+        blog: fav.blog
+          ? {
+              _id: (fav.blog as any)._id.toString(),
+              title: (fav.blog as any).title,
+            }
+          : null,
+      }));
+    } catch (error) {
+      throw new BadRequestException('Failed to retrieve favorites');
+    }
+  }
 }
