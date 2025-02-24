@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-export type FavoriteDocument = Comment & Document;
+export type CommentDocument = Comment & Document;
 @Schema({ timestamps: true })
 export class Comment {
   @Prop({ required: true, minlength: 1 })
