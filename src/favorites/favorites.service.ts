@@ -51,4 +51,16 @@ export class FavoriteService {
       throw new BadRequestException('Failed to add favorite');
     }
   }
+  async removeFavorite(favoriteId: string) {
+    try {
+      const favorite = await this.favoriteModel.findById(favoriteId);
+      if (!favorite) {
+        throw new NotFoundException('Favorite not found');
+      }
+      await this.favoriteModel.deleteOne({ _id: favoriteId });
+      return { message: 'Favorite removed successfully' };
+    } catch (error) {
+      throw new BadRequestException('Failed to remove favorite');
+    }
+  }
 }
