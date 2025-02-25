@@ -38,7 +38,7 @@ import { MongooseModule } from '@nestjs/mongoose';
           callback(new BadRequestException('Unsupported file format'), false);
         }
       },
-      limits: { fileSize: 1024 * 1024 * 2 },
+      limits: { fileSize: 1024 * 1024 * 5 },
     }),
   ],
   providers: [ServicesService],

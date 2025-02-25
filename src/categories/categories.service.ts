@@ -3,13 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Category, CategoryDocument } from './category.schema';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
-import { ObjectId } from 'mongodb';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -18,7 +15,6 @@ export class CategoriesService {
   constructor(
     @InjectModel(Category.name)
     private readonly categoriesModel: Model<CategoryDocument>,
-    private readonly usersService: UsersService,
   ) {}
   public async CreateCategory(
     createCategory: CreateCategoryDto,
@@ -74,19 +70,20 @@ export class CategoriesService {
   }
   public async updateCategory(id: string, updateCategory: UpdateCategoryDto) {
     try {
-      const category = await this.getCategoryBy(id);
-      if (!category) throw new NotFoundException('Category not found');
-      const result = await this.categoriesModel.updateOne(
-        {
-          _id: id,
-        },
-        { $set: updateCategory },
-      );
+      const category = await this.categoriesModel
+        .findByIdAndUpdate(
+          id,
+          { $set: updateCategory },
+          { new: true, projection: { title: 1 } },
+        )
+        .lean();
 
-      if (result.modifiedCount === 0) {
-        throw new Error('Failed to update category');
-      }
-      return { message: 'Category updated successfully' };
+      if (!category) throw new NotFoundException('Category not found');
+
+      return {
+        _id: category._id.toString(),
+        title: category.title,
+      };
     } catch (error) {
       throw new Error('Failed to update category');
     }

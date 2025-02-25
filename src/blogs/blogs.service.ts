@@ -3,14 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Blog, BlogDocument } from './blog.schema';
-import { Repository } from 'typeorm';
-import { UsersService } from 'src/users/users.service';
 import { CreateBlogDto } from './dtos/create-blog.dto';
-import { ObjectId } from 'mongodb';
 import { BlogStatus } from 'src/utils/enums';
-import { CategoriesService } from 'src/categories/categories.service';
 import { UpdateBlogDto } from './dtos/update-blog.dto';
 import { join } from 'path';
 import { unlinkSync } from 'fs';
@@ -23,8 +18,6 @@ export class BlogsService {
   constructor(
     @InjectModel(Blog.name)
     private readonly blogsModel: Model<BlogDocument>,
-    private readonly usersService: UsersService,
-    private readonly categoriesService: CategoriesService,
   ) {}
   public async createBlog(
     createBlog: CreateBlogDto,
@@ -73,6 +66,8 @@ export class BlogsService {
     try {
       const blogs = await this.blogsModel
         .find({ status: BlogStatus.PUBLISHED })
+        .populate('category', '_id title')
+        .populate('user', '_id fullName')
         .lean()
         .exec();
       return blogs.map((blog) => ({
@@ -80,9 +75,11 @@ export class BlogsService {
         _id: blog._id.toString(),
         user: {
           _id: blog.user._id.toString(),
+          fullName: (blog.user as any).fullName,
         },
         category: {
           _id: blog.category._id.toString(),
+          title: (blog.category as any).title,
         },
       }));
     } catch (error) {
@@ -132,21 +129,45 @@ export class BlogsService {
           await this.removeBlogImage(id);
         }
       }
-      const result = await this.blogsModel.updateOne(
-        { _id: id },
-        {
-          $set: {
-            ...updateBlog,
-            blogImage: blogImage
-              ? `/images/blogs/${blogImage}`
-              : blog.blogImage,
+      const result = await this.blogsModel
+        .findByIdAndUpdate(
+          id,
+          {
+            $set: {
+              ...updateBlog,
+              blogImage: blogImage
+                ? `/images/blogs/${blogImage}`
+                : blog.blogImage,
+            },
           },
-        },
-      );
-      if (result.modifiedCount === 0) {
+          {
+            new: true,
+          },
+        )
+        .populate('user', '_id fullName')
+        .populate('category', '_id title')
+        .lean();
+      console.log(result);
+      if (!result) {
         throw new Error('Failed to update blog');
       }
-      return { message: 'Blog updated successfully' };
+      const blogResponse = {
+        ...result,
+        _id: result._id.toString(),
+        user: result.user
+          ? {
+              _id: (result.user as any)._id.toString(),
+              fullName: (result.user as any).fullName,
+            }
+          : null,
+        category: result.category
+          ? {
+              _id: (result.category as any)._id.toString(),
+              title: (result.category as any).title,
+            }
+          : null,
+      };
+      return blogResponse;
     } catch (error) {
       throw new Error('Failed to update blog');
     }

@@ -39,15 +39,12 @@ export class ServicesService {
         user: new Types.ObjectId(userId),
         category: new Types.ObjectId(categoryId),
       });
-      const savedService = await this.servicesModel
-        .findById(newService._id)
-        .lean()
-        .exec();
+
       return {
-        ...savedService,
-        _id: savedService._id.toString(),
-        user: savedService.user.toString(),
-        category: savedService.category.toString(),
+        ...newService.toObject(),
+        _id: newService._id.toString(),
+        user: newService.user.toString(),
+        category: newService.category.toString(),
       };
     } catch (error) {
       throw new Error('Failed to create service');
@@ -55,15 +52,22 @@ export class ServicesService {
   }
   public async getAllServices() {
     try {
-      const services = await this.servicesModel.find().lean().exec();
+      const services = await this.servicesModel
+        .find()
+        .populate('category', '_id title')
+        .populate('user', '_id fullName')
+        .lean()
+        .exec();
       return services.map((service) => ({
         ...service,
         _id: service._id.toString(),
         user: {
           _id: (service.user as any)._id.toString(),
+          fullName: (service.user as any).fullName,
         },
         category: {
           _id: (service.category as any)._id.toString(),
+          title: (service.category as any).title,
         },
       }));
     } catch (error) {
@@ -87,12 +91,14 @@ export class ServicesService {
           ? {
               ...(service.user as any),
               _id: (service.user as any)._id.toString(),
+              fullName: (service.user as any).fullName.toString(),
             }
           : null,
         category: service.category
           ? {
               ...(service.category as any),
               _id: (service.category as any)._id.toString(),
+              title: (service.category as any).title.toString(),
             }
           : null,
       };
@@ -108,23 +114,44 @@ export class ServicesService {
       if (serviceImage && service.serviceImage) {
         await this.removeServiceImage(id);
       }
-      const result = await this.servicesModel.updateOne(
-        { _id: id },
-        {
-          $set: {
-            ...updateService,
-            serviceImage: serviceImage
-              ? `/images/services/${serviceImage}`
-              : service.serviceImage,
+      const result = await this.servicesModel
+        .findByIdAndUpdate(
+          { _id: id },
+          {
+            $set: {
+              ...updateService,
+              serviceImage: serviceImage
+                ? `/images/services/${serviceImage}`
+                : service.serviceImage,
+            },
           },
-        },
-      );
+          { new: true },
+        )
+        .populate('user', '_id fullName')
+        .populate('category', '_id title')
+        .lean();
 
-      if (result.modifiedCount === 0) {
+      if (!result) {
         throw new Error('Failed to update service');
       }
 
-      return { message: 'Service updated successfully' };
+      const ServiceResponse = {
+        ...result,
+        _id: result._id.toString(),
+        user: result.user
+          ? {
+              _id: (result.user as any)._id.toString(),
+              fullName: (result.user as any).fullName,
+            }
+          : null,
+        category: result.category
+          ? {
+              _id: (result.category as any)._id.toString(),
+              title: (result.category as any).title,
+            }
+          : null,
+      };
+      return ServiceResponse;
     } catch (error) {
       console.error('Error updating service:', error);
       throw new BadRequestException('Failed to update service');

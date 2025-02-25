@@ -4,12 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Skill, SkillDocument } from './skill.schema';
-import { UsersService } from 'src/users/users.service';
 import { CreateSkillDto } from './dtos/create-skill.dto';
 import { UpdateSkillDto } from './dtos/update-skill.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User } from 'src/users/user.schema';
 
 @Injectable()
 export class SkillsService {
@@ -68,18 +66,19 @@ export class SkillsService {
     };
   }
   public async updateSkill(id: string, updateSkill: UpdateSkillDto) {
-    const skill = await this.getSkillBy(id);
+    const skill = await this.skillsModel
+      .findByIdAndUpdate(
+        id,
+        { $set: updateSkill },
+        { new: true, projection: { title: 1, description: 1 } },
+      )
+      .lean();
     if (!skill) throw new NotFoundException('Skill not found');
-    const result = await this.skillsModel.updateOne(
-      {
-        _id: id,
-      },
-      { $set: updateSkill },
-    );
-    if (result.modifiedCount === 0) {
-      throw new Error('Failed to update skill');
-    }
-    return { message: 'Skill updated successfully' };
+    return {
+      _id: skill._id.toString(),
+      title: skill.title,
+      description: skill.description,
+    };
   }
   public async deleteSkill(id: string) {
     try {
