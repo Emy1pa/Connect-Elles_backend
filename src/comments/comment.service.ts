@@ -40,10 +40,19 @@ export class CommentService {
         user: new Types.ObjectId(userId),
         blog: new Types.ObjectId(blogId),
       });
+      newComment = await newComment.populate(
+        'user',
+        '_id fullName profileImage',
+      );
+
       return {
         ...newComment.toObject(),
         _id: newComment._id.toString(),
-        user: newComment.user._id.toString(),
+        user: {
+          _id: newComment.user._id.toString(),
+          fullName: (newComment.user as any).fullName,
+          profileImage: (newComment.user as any).profileImage,
+        },
         blog: newComment.blog._id.toString(),
       };
     } catch (error) {

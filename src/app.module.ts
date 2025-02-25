@@ -11,6 +11,8 @@ import { SkillsModule } from './skills/skills.module';
 import { CategoriesModule } from './categories/categories.module';
 import { BlogsModule } from './blogs/blogs.module';
 import { ServicesModule } from './services/services.module';
+import { FavoriteModule } from './favorites/favorites.module';
+import { CommentModule } from './comments/comment.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { ServicesModule } from './services/services.module';
     CategoriesModule,
     BlogsModule,
     ServicesModule,
+    FavoriteModule,
+    CommentModule,
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
