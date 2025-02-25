@@ -5,11 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CommentDocument } from './comment.schema';
+import { Comment, CommentDocument } from './comment.schema';
 import { User, UserDocument } from 'src/users/user.schema';
 import { Blog, BlogDocument } from 'src/blogs/blog.schema';
 import { CreateCommentDto } from './dtos/create-comment.dto';
-import { text } from 'stream/consumers';
 import { UpdateCommentDto } from './dtos/update-comment.dto';
 
 @Injectable()
@@ -56,13 +55,22 @@ export class CommentService {
 
   async getAllComments() {
     try {
-      const comments = await this.commentModel.find().lean().exec();
+      const comments = await this.commentModel
+        .find()
+        .populate('user', '_id fullName profileImage')
+
+        .populate('blog', '_id title')
+        .lean()
+        .exec();
       return comments.map((comment) => ({
         ...comment,
         _id: comment._id.toString(),
         text: comment.text,
         user: {
           _id: comment.user._id.toString(),
+          fullName: (comment.user as any).fullName,
+          profileImage: (comment.user as any).profileImage,
+
           blog: {
             _id: comment.blog._id.toString(),
           },

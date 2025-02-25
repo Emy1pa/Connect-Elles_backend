@@ -16,16 +16,16 @@ import { Roles } from 'src/users/decorators/user-role.decorator';
 import { UserRole } from 'src/utils/enums';
 
 @Controller('comments')
-@UseGuards(AuthRolesGuard)
-@Roles(UserRole.NORMAL_USER)
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Post(':blogId')
+  @Post(':userId/:blogId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.NORMAL_USER)
   async createComment(
     @Body() createCommentDto: CreateCommentDto,
     @Param('blogId') blogId: string,
-    @Body('userId') userId: string,
+    @Param('userId') userId: string,
   ) {
     return this.commentService.createComment(createCommentDto, userId, blogId);
   }
@@ -51,7 +51,7 @@ export class CommentController {
 
   @Put(':id')
   @UseGuards(AuthRolesGuard)
-  @Roles(UserRole.NORMAL_USER)
+  @Roles(UserRole.NORMAL_USER, UserRole.ADMIN)
   async updateComment(
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
