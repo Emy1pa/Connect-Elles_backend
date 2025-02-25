@@ -181,4 +181,16 @@ export class CommentService {
       );
     }
   }
+  async removeComment(commentId: string) {
+    try {
+      const comment = await this.commentModel.findById(commentId);
+      if (!comment) {
+        throw new NotFoundException('Comment not found');
+      }
+      await this.commentModel.deleteOne({ _id: commentId });
+      return { message: 'Comment removed successfully' };
+    } catch (error) {
+      throw new BadRequestException('Failed to remove comment');
+    }
+  }
 }
