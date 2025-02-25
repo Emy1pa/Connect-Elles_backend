@@ -10,6 +10,7 @@ import { User, UserDocument } from 'src/users/user.schema';
 import { Blog, BlogDocument } from 'src/blogs/blog.schema';
 import { CreateCommentDto } from './dtos/create-comment.dto';
 import { text } from 'stream/consumers';
+import { UpdateCommentDto } from './dtos/update-comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -98,6 +99,85 @@ export class CommentService {
     } catch (error) {
       throw new BadRequestException(
         `Failed to retrieve comments: ${error.message}`,
+      );
+    }
+  }
+  async getCommentBy(id: string) {
+    try {
+      const comment = await this.commentModel
+        .findById(id.toString())
+        .populate('user', '_id fullName')
+        .populate('blog', '_id title')
+        .lean()
+        .exec();
+      if (!comment) throw new NotFoundException('Comment not found');
+      return {
+        ...comment,
+        _id: comment._id.toString(),
+        user: comment.user
+          ? {
+              ...(comment.user as any),
+              _id: (comment.user as any)._id.toString(),
+              fullName: (comment.user as any).fullName,
+            }
+          : null,
+        blog: comment.blog
+          ? {
+              ...(comment.blog as any),
+              _id: (comment.blog as any)._id.toString(),
+              title: (comment.blog as any).title,
+            }
+          : null,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to retrieve comment: ${error.message}`,
+      );
+    }
+  }
+  async updateComment(id: string, updateComment: UpdateCommentDto) {
+    try {
+      const comment = await this.getCommentBy(id);
+      if (!comment) throw new NotFoundException('Comment not found');
+      const result = await this.commentModel
+        .findByIdAndUpdate(
+          id,
+          {
+            $set: {
+              ...updateComment,
+            },
+          },
+          {
+            new: true,
+          },
+        )
+        .populate('user', '_id fullName')
+        .populate('blog', '_id title')
+        .lean()
+        .exec();
+      if (!result) {
+        throw new Error('Failed to update comment');
+      }
+      const commentResponse = {
+        ...result,
+        _id: result._id.toString(),
+        user: result.user
+          ? {
+              _id: (result.user as any)._id.toString(),
+              fullName: (result.user as any).fullName,
+            }
+          : null,
+        blog: result.blog
+          ? {
+              _id: (result.blog as any)._id.toString(),
+              title: (result.blog as any).title,
+            }
+          : null,
+      };
+      return commentResponse;
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to update comment: ${error.message}`,
       );
     }
   }
