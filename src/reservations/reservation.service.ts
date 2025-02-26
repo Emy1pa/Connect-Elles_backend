@@ -195,4 +195,75 @@ export class ReservationService {
       );
     }
   }
+  async updateReservationStatus(
+    reservationId: string,
+    userId: string,
+    newStatus: ReservationStatus,
+    isMentor: boolean,
+  ) {
+    try {
+      const reservation = await this.reservationModel.findById(reservationId);
+      if (!reservation) {
+        throw new NotFoundException('Reservation not found');
+      }
+
+      if (!isMentor && reservation.user.toString() !== userId) {
+        throw new BadRequestException(
+          'You can only update your own reservations',
+        );
+      }
+
+      if (reservation.reservationStatus !== ReservationStatus.PENDING) {
+        throw new BadRequestException(
+          'Only pending reservations can be updated',
+        );
+      }
+
+      if (!isMentor && newStatus !== ReservationStatus.CANCELED) {
+        throw new BadRequestException('You can only cancel your reservations');
+      }
+
+      if (isMentor && newStatus !== ReservationStatus.CONFIRMED) {
+        throw new BadRequestException('Mentors can only confirm reservations');
+      }
+
+      reservation.reservationStatus = newStatus;
+      await reservation.save();
+
+      const updatedReservation = await this.reservationModel
+        .findById(reservationId)
+        .populate('user', '_id fullName email')
+        .populate('service', '_id name price description')
+        .lean()
+        .exec();
+
+      if (!updatedReservation) {
+        throw new Error('Failed to retrieve updated reservation');
+      }
+
+      return {
+        ...updatedReservation,
+        _id: updatedReservation._id.toString(),
+        user: updatedReservation.user
+          ? {
+              _id: updatedReservation.user._id.toString(),
+              fullName: (updatedReservation.user as any).fullName,
+              email: (updatedReservation.user as any).email,
+            }
+          : null,
+        service: updatedReservation.service
+          ? {
+              _id: updatedReservation.service._id.toString(),
+              name: (updatedReservation.service as any).name,
+              price: (updatedReservation.service as any).price,
+              description: (updatedReservation.service as any).description,
+            }
+          : null,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to update reservation status: ${error.message}`,
+      );
+    }
+  }
 }
