@@ -88,4 +88,38 @@ export class ReservationService {
       );
     }
   }
+  async getAllReservations() {
+    try {
+      const reservations = await this.reservationModel
+        .find()
+        .populate('user', '_id fullName email')
+        .populate('service', '_id name price description')
+        .lean()
+        .exec();
+
+      return reservations.map((reservation) => ({
+        ...reservation,
+        _id: reservation._id.toString(),
+        user: reservation.user
+          ? {
+              _id: reservation.user._id.toString(),
+              fullName: (reservation.user as any).fullName,
+              email: (reservation.user as any).email,
+            }
+          : null,
+        service: reservation.service
+          ? {
+              _id: reservation.service._id.toString(),
+              name: (reservation.service as any).name,
+              price: (reservation.service as any).price,
+              description: (reservation.service as any).description,
+            }
+          : null,
+      }));
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to retrieve reservations: ${error.message}`,
+      );
+    }
+  }
 }
