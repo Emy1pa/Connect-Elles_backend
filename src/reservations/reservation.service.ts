@@ -122,4 +122,39 @@ export class ReservationService {
       );
     }
   }
+  async getUserReservations(userId: string) {
+    try {
+      const existingUser = await this.userModel.findById(userId);
+      if (!existingUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      const reservations = await this.reservationModel
+        .find({
+          user: new Types.ObjectId(userId),
+        })
+        .populate('service', '_id name price description')
+        .lean()
+        .exec();
+
+      return reservations.map((reservation) => ({
+        _id: reservation._id.toString(),
+        reservationDate: reservation.reservationDate,
+        status: reservation.reservationStatus,
+        cardNumber: reservation.cardNumber,
+        service: reservation.service
+          ? {
+              _id: reservation.service._id.toString(),
+              name: (reservation.service as any).name,
+              price: (reservation.service as any).price,
+              description: (reservation.service as any).description,
+            }
+          : null,
+      }));
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to retrieve user reservations: ${error.message}`,
+      );
+    }
+  }
 }
