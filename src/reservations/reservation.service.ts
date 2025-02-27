@@ -10,7 +10,7 @@ import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from 'src/services/service.schema';
 import { CreateReservationDto } from './dtos/create-reservation.dto';
 import { luhnCheck } from 'src/utils/card-validator';
-import { ReservationStatus } from 'src/utils/enums';
+import { ReservationStatus, ServiceStatus } from 'src/utils/enums';
 
 @Injectable()
 export class ReservationService {
@@ -36,6 +36,9 @@ export class ReservationService {
       if (!existingService) {
         throw new NotFoundException('Service not found');
       }
+      if (existingService.numberOfPlaces <= 0) {
+        throw new BadRequestException('No available places for this service');
+      }
       if (!luhnCheck(createReservation.cardNumber)) {
         throw new BadRequestException('Invalid card number');
       }
@@ -58,11 +61,23 @@ export class ReservationService {
         user: new Types.ObjectId(userId),
         service: new Types.ObjectId(serviceId),
       });
+      await this.serviceModel.findByIdAndUpdate(
+        serviceId,
+        { $inc: { numberOfPlaces: -1 } },
+        { new: true },
+      );
+      const updatedService = await this.serviceModel.findById(serviceId);
+      if (updatedService && updatedService.numberOfPlaces === 0) {
+        await this.serviceModel.findByIdAndUpdate(
+          serviceId,
+          { status: ServiceStatus.NOT_AVAILABLE },
+          { new: true },
+        );
+      }
       const populatedReservation = await this.reservationModel
         .findById(newReservation._id)
         .populate('user', '_id fullName email')
         .populate('service', '_id name price description')
-        .lean()
         .exec();
       if (!populatedReservation) {
         throw new Error('Failed to retrieve created reservation');
