@@ -90,6 +90,22 @@ export class CommentService {
     }
   }
 
+  // async getBlogComments(blogId: string) {
+  //   try {
+  //     const comments = await this.commentModel
+  //       .find({ blog: blogId })
+  //       .populate('user', 'fullName profileImage')
+  //       .sort({ createdAt: -1 })
+  //       .exec();
+
+  //     return comments;
+  //   } catch (error) {
+  //     throw new Error(
+  //       `Erreur lors de la récupération des commentaires pour le blog: ${error.message}`,
+  //     );
+  //   }
+  // }
+
   async getUserComments(userId: string) {
     try {
       const existingUser = await this.userModel.findById(userId);
@@ -110,6 +126,41 @@ export class CommentService {
           ? {
               _id: (comment.blog as any)._id.toString(),
               title: (comment.blog as any).title,
+            }
+          : null,
+      }));
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to retrieve comments: ${error.message}`,
+      );
+    }
+  }
+  async getBlogComments(blogId: string) {
+    try {
+      const existingBlog = await this.blogModel.findById(blogId);
+      if (!existingBlog) {
+        throw new NotFoundException('Blog not found');
+      }
+      const blogs = await this.commentModel
+        .find({
+          blog: new Types.ObjectId(blogId),
+        })
+        .populate('user', '_id fullName profileImage')
+        .sort({ createdAt: -1 })
+
+        .lean()
+        .exec();
+      return blogs.map((blog) => ({
+        _id: blog._id.toString(),
+        text: blog.text,
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt,
+
+        user: blog.user
+          ? {
+              _id: (blog.user as any)._id.toString(),
+              fullName: (blog.user as any).fullName,
+              profileImage: (blog.user as any).profileImage,
             }
           : null,
       }));

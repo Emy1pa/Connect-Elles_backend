@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dtos/create-comment.dto';
@@ -49,9 +50,9 @@ export class CommentController {
     return this.commentService.getCommentBy(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @UseGuards(AuthRolesGuard)
-  @Roles(UserRole.NORMAL_USER, UserRole.ADMIN)
+  @Roles(UserRole.NORMAL_USER)
   async updateComment(
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
@@ -64,5 +65,10 @@ export class CommentController {
   @Roles(UserRole.NORMAL_USER)
   async removeComment(@Param('id') commentId: string) {
     return this.commentService.removeComment(commentId);
+  }
+
+  @Get('blog/:blogId')
+  async getBlogComments(@Param('blogId') blogId: string) {
+    return this.commentService.getBlogComments(blogId);
   }
 }

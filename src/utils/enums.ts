@@ -15,3 +15,9 @@ export enum ServiceStatus {
   EXPIRED = 'EXPIRED',
   NOT_AVAILABLE = 'NOT-AVAILABLE',
 }
+
+export enum ReservationStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELED = 'CANCELED',
+}

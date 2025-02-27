@@ -13,7 +13,7 @@ export class Reservation {
     enum: ReservationStatus,
     default: ReservationStatus.PENDING,
   })
-  userRole: ReservationStatus;
+  reservationStatus: ReservationStatus;
 
   @Prop({ required: true })
   cardHolderName: string;
