@@ -9,5 +9,10 @@ export class Comment {
   blog: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 export const CommentSchema = SchemaFactory.createForClass(Comment);
