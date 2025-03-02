@@ -148,7 +148,7 @@ export class ReservationService {
         .find({
           user: new Types.ObjectId(userId),
         })
-        .populate('service', '_id name price description')
+        .populate('service', '_id name price serviceImage duration')
         .lean()
         .exec();
 
@@ -162,7 +162,8 @@ export class ReservationService {
               _id: reservation.service._id.toString(),
               name: (reservation.service as any).name,
               price: (reservation.service as any).price,
-              description: (reservation.service as any).description,
+              serviceImage: (reservation.service as any).serviceImage,
+              duration: (reservation.service as any).duration,
             }
           : null,
       }));
@@ -244,6 +245,24 @@ export class ReservationService {
 
       reservation.reservationStatus = newStatus;
       await reservation.save();
+      if (newStatus === ReservationStatus.CANCELED) {
+        const serviceId = reservation.service.toString();
+        const service = await this.serviceModel.findById(serviceId);
+
+        if (service) {
+          service.numberOfPlaces += 1;
+
+          // If service was NOT_AVAILABLE and now has places, update to AVAILABLE
+          if (
+            service.status === ServiceStatus.NOT_AVAILABLE &&
+            service.numberOfPlaces >= 1
+          ) {
+            service.status = ServiceStatus.AVAILABLE;
+          }
+
+          await service.save();
+        }
+      }
 
       const updatedReservation = await this.reservationModel
         .findById(reservationId)
