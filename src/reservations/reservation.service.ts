@@ -300,4 +300,40 @@ export class ReservationService {
       );
     }
   }
+
+  async getReservationStatistics(userId: string) {
+    try {
+      const userObjectId = new Types.ObjectId(userId);
+
+      const totalCount = await this.reservationModel.countDocuments({
+        user: userObjectId,
+      });
+
+      const pendingCount = await this.reservationModel.countDocuments({
+        user: userObjectId,
+        reservationStatus: ReservationStatus.PENDING,
+      });
+
+      const confirmedCount = await this.reservationModel.countDocuments({
+        user: userObjectId,
+        reservationStatus: ReservationStatus.CONFIRMED,
+      });
+
+      const canceledCount = await this.reservationModel.countDocuments({
+        user: userObjectId,
+        reservationStatus: ReservationStatus.CANCELED,
+      });
+
+      return {
+        total: totalCount,
+        pending: pendingCount,
+        confirmed: confirmedCount,
+        canceled: canceledCount,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to get reservation statistics: ${error.message}`,
+      );
+    }
+  }
 }
