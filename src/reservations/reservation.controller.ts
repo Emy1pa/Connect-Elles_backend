@@ -70,4 +70,10 @@ export class ReservationController {
       isMentor,
     );
   }
+  @Get('statistics/:userId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR, UserRole.NORMAL_USER)
+  async getReservationStatistics(@Param('userId') userId: string) {
+    return this.reservationService.getReservationStatistics(userId);
+  }
 }
