@@ -261,4 +261,53 @@ export class CommentService {
       throw new BadRequestException('Failed to remove comment');
     }
   }
+  async getCommentCount(userId: string) {
+    try {
+      const existingUser = await this.userModel.findById(userId);
+      if (!existingUser) {
+        throw new NotFoundException('User not found');
+      }
+      const comments = await this.commentModel
+        .find({
+          user: new Types.ObjectId(userId),
+        })
+        .lean()
+        .exec();
+      const count = comments.length;
+
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count comments: ${error.message}`,
+      );
+    }
+  }
+
+  async getMentorCommentCount(mentorId: string) {
+    try {
+      const userObjectId = new Types.ObjectId(mentorId);
+
+      const mentorBlogs = await this.blogModel
+        .find({ user: userObjectId })
+        .lean()
+        .exec();
+
+      if (!mentorBlogs || mentorBlogs.length === 0) {
+        throw new NotFoundException('No blogs found for this mentor');
+      }
+
+      const blogIds = mentorBlogs.map((blog) => blog._id);
+
+      const totalCount = await this.commentModel.countDocuments({
+        blog: { $in: blogIds },
+      });
+
+      console.log(totalCount);
+      return { total: totalCount };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count favorites: ${error.message}`,
+      );
+    }
+  }
 }

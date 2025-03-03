@@ -205,4 +205,15 @@ export class BlogsService {
       }
     }
   }
+  async getBlogsCount(mentorId: string) {
+    try {
+      const count = await this.blogsModel.countDocuments({
+        user: new Types.ObjectId(mentorId),
+      });
+
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(`Failed to count blogs: ${error.message}`);
+    }
+  }
 }

@@ -192,4 +192,18 @@ export class ServicesService {
       }
     }
   }
+
+  async getServicesCount(mentorId: string) {
+    try {
+      const count = await this.servicesModel.countDocuments({
+        user: new Types.ObjectId(mentorId),
+      });
+
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count services: ${error.message}`,
+      );
+    }
+  }
 }

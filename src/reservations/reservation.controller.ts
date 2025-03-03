@@ -53,7 +53,7 @@ export class ReservationController {
 
   @Patch(':id/status/:userId/:userRole')
   @UseGuards(AuthRolesGuard)
-  @Roles(UserRole.NORMAL_USER)
+  @Roles(UserRole.NORMAL_USER, UserRole.MENTOR)
   async updateReservation(
     @Param('id') reservationId: string,
     @Param('userId') userId: string,
@@ -75,6 +75,12 @@ export class ReservationController {
   @Roles(UserRole.ADMIN, UserRole.MENTOR, UserRole.NORMAL_USER)
   async getReservationStatistics(@Param('userId') userId: string) {
     return this.reservationService.getReservationStatistics(userId);
+  }
+  @Get('statistics/mentor/:mentorId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  async getMentorReservationStatistics(@Param('mentorId') mentorId: string) {
+    return this.reservationService.getMentorReservationsStatistics(mentorId);
   }
   @Get('mentor/:mentorId')
   @UseGuards(AuthRolesGuard)

@@ -50,4 +50,17 @@ export class FavoriteController {
       throw new BadRequestException(error.message);
     }
   }
+
+  @Get('statistics/:userId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.MENTOR, UserRole.NORMAL_USER)
+  async getFavorisStatistics(@Param('userId') userId: string) {
+    return this.favoriteService.getFavoriteCount(userId);
+  }
+  @Get('statistics/mentor/:mentorId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  async getMentorFavorisStatistics(@Param('mentorId') mentorId: string) {
+    return this.favoriteService.getMentorFavoriteCount(mentorId);
+  }
 }

@@ -74,7 +74,7 @@ export class FavoriteService {
         .find({
           user: new Types.ObjectId(userId),
         })
-        .populate('blog', '_id title')
+        .populate('blog', '_id title blogImage summary')
         .lean()
         .exec();
       return favorites.map((fav) => ({
@@ -83,11 +83,63 @@ export class FavoriteService {
           ? {
               _id: (fav.blog as any)._id.toString(),
               title: (fav.blog as any).title,
+              blogImage: (fav.blog as any).blogImage,
+              summary: (fav.blog as any).summary,
             }
           : null,
       }));
     } catch (error) {
       throw new BadRequestException('Failed to retrieve favorites');
+    }
+  }
+
+  async getFavoriteCount(userId: string) {
+    try {
+      const existingUser = await this.userModel.findById(userId);
+      if (!existingUser) {
+        throw new NotFoundException('User not found');
+      }
+      const favoris = await this.favoriteModel
+        .find({
+          user: new Types.ObjectId(userId),
+        })
+        .lean()
+        .exec();
+      const count = favoris.length;
+
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count favoris: ${error.message}`,
+      );
+    }
+  }
+
+  async getMentorFavoriteCount(mentorId: string) {
+    try {
+      const userObjectId = new Types.ObjectId(mentorId);
+
+      const mentorBlogs = await this.blogModel
+        .find({ user: userObjectId })
+        .lean()
+        .exec();
+
+      if (!mentorBlogs || mentorBlogs.length === 0) {
+        throw new NotFoundException('No blogs found for this mentor');
+      }
+
+      const blogIds = mentorBlogs.map((blog) => blog._id);
+
+      const totalCount = await this.favoriteModel.countDocuments({
+        blog: { $in: blogIds },
+      });
+
+      console.log(totalCount);
+      return { total: totalCount };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count favorites: ${error.message}`,
+      );
     }
   }
 }

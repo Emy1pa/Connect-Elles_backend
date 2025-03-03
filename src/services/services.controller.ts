@@ -78,4 +78,11 @@ export class ServicesController {
   public deleteService(@Param('id') id: string, payload: JWTPayloadType) {
     return this.servicesService.deleteService(id, payload);
   }
+
+  @Get('statistics/:mentorId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  async getServicesStatistics(@Param('mentorId') mentorId: string) {
+    return this.servicesService.getServicesCount(mentorId);
+  }
 }
