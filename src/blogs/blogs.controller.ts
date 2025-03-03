@@ -86,4 +86,11 @@ export class BlogsController {
   public deleteBlog(@Param('id') id: string, payload: JWTPayloadType) {
     return this.blogsService.deleteBlog(id, payload);
   }
+
+  @Get('statistics/:mentorId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  async getFavorisStatistics(@Param('mentorId') mentorId: string) {
+    return this.blogsService.getBlogsCount(mentorId);
+  }
 }

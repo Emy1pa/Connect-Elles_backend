@@ -92,4 +92,16 @@ export class SkillsService {
       throw new Error('Failed to delete skill');
     }
   }
+
+  async getSkillCount(mentorId: string) {
+    try {
+      const count = await this.skillsModel.countDocuments({
+        user: new Types.ObjectId(mentorId),
+      });
+
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(`Failed to count skills: ${error.message}`);
+    }
+  }
 }

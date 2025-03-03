@@ -71,4 +71,17 @@ export class CommentController {
   async getBlogComments(@Param('blogId') blogId: string) {
     return this.commentService.getBlogComments(blogId);
   }
+  @Get('statistics/:userId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.NORMAL_USER)
+  async getCommentsStatistics(@Param('userId') userId: string) {
+    return this.commentService.getCommentCount(userId);
+  }
+
+  @Get('statistics/mentor/:mentorId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  async getMentorCommentsStatistics(@Param('mentorId') mentorId: string) {
+    return this.commentService.getMentorCommentCount(mentorId);
+  }
 }

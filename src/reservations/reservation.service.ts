@@ -148,7 +148,7 @@ export class ReservationService {
         .find({
           user: new Types.ObjectId(userId),
         })
-        .populate('service', '_id name price serviceImage duration')
+        .populate('service', '_id title price serviceImage duration')
         .lean()
         .exec();
 
@@ -160,7 +160,7 @@ export class ReservationService {
         service: reservation.service
           ? {
               _id: reservation.service._id.toString(),
-              name: (reservation.service as any).name,
+              title: (reservation.service as any).title,
               price: (reservation.service as any).price,
               serviceImage: (reservation.service as any).serviceImage,
               duration: (reservation.service as any).duration,
@@ -178,7 +178,7 @@ export class ReservationService {
       const reservation = await this.reservationModel
         .findById(id)
         .populate('user', '_id fullName email')
-        .populate('service', '_id name price description')
+        .populate('service', '_id title price description')
         .lean()
         .exec();
 
@@ -199,7 +199,7 @@ export class ReservationService {
         service: reservation.service
           ? {
               _id: reservation.service._id.toString(),
-              name: (reservation.service as any).name,
+              title: (reservation.service as any).title,
               price: (reservation.service as any).price,
               description: (reservation.service as any).description,
             }
@@ -266,7 +266,7 @@ export class ReservationService {
       const updatedReservation = await this.reservationModel
         .findById(reservationId)
         .populate('user', '_id fullName email')
-        .populate('service', '_id name price description')
+        .populate('service', '_id title price description')
         .lean()
         .exec();
 
@@ -287,7 +287,7 @@ export class ReservationService {
         service: updatedReservation.service
           ? {
               _id: updatedReservation.service._id.toString(),
-              name: (updatedReservation.service as any).name,
+              title: (updatedReservation.service as any).title,
               price: (updatedReservation.service as any).price,
               description: (updatedReservation.service as any).description,
             }
@@ -356,7 +356,7 @@ export class ReservationService {
           service: { $in: serviceIds },
         })
         .populate('user', '_id fullName email')
-        .populate('service', '_id name price description')
+        .populate('service', '_id title price description serviceImage')
         .lean()
         .exec();
 
@@ -373,15 +373,66 @@ export class ReservationService {
         service: reservation.service
           ? {
               _id: reservation.service._id.toString(),
-              name: (reservation.service as any).name,
+              title: (reservation.service as any).title,
               price: (reservation.service as any).price,
               description: (reservation.service as any).description,
+              serviceImage: (reservation.service as any).serviceImage,
             }
           : null,
       }));
     } catch (error) {
       throw new BadRequestException(
         `Failed to retrieve mentor service reservations: ${error.message}`,
+      );
+    }
+  }
+
+  async getMentorReservationsStatistics(mentorId: string) {
+    try {
+      const mentorServices = await this.serviceModel
+        .find({ user: new Types.ObjectId(mentorId) })
+        .lean()
+        .exec();
+
+      if (!mentorServices || mentorServices.length === 0) {
+        return {
+          total: 0,
+          pending: 0,
+          confirmed: 0,
+          canceled: 0,
+        };
+      }
+
+      const serviceIds = mentorServices.map((service) => service._id);
+
+      const totalCount = await this.reservationModel.countDocuments({
+        service: { $in: serviceIds },
+      });
+
+      const pendingCount = await this.reservationModel.countDocuments({
+        service: { $in: serviceIds },
+        reservationStatus: ReservationStatus.PENDING,
+      });
+
+      const confirmedCount = await this.reservationModel.countDocuments({
+        service: { $in: serviceIds },
+        reservationStatus: ReservationStatus.CONFIRMED,
+      });
+
+      const canceledCount = await this.reservationModel.countDocuments({
+        service: { $in: serviceIds },
+        reservationStatus: ReservationStatus.CANCELED,
+      });
+
+      return {
+        total: totalCount,
+        pending: pendingCount,
+        confirmed: confirmedCount,
+        canceled: canceledCount,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to get mentor's reservation statistics: ${error.message}`,
       );
     }
   }

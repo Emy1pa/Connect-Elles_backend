@@ -55,4 +55,11 @@ export class SkillsController {
   public deleteSkill(@Param('id') id: string) {
     return this.skillsService.deleteSkill(id);
   }
+
+  @Get('statistics/:mentorId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  async getSkillStatistics(@Param('mentorId') mentorId: string) {
+    return this.skillsService.getSkillCount(mentorId);
+  }
 }
