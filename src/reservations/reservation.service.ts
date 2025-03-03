@@ -10,7 +10,7 @@ import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from 'src/services/service.schema';
 import { CreateReservationDto } from './dtos/create-reservation.dto';
 import { luhnCheck } from 'src/utils/card-validator';
-import { ReservationStatus, ServiceStatus } from 'src/utils/enums';
+import { ReservationStatus, ServiceStatus, UserRole } from 'src/utils/enums';
 
 @Injectable()
 export class ReservationService {
@@ -252,7 +252,6 @@ export class ReservationService {
         if (service) {
           service.numberOfPlaces += 1;
 
-          // If service was NOT_AVAILABLE and now has places, update to AVAILABLE
           if (
             service.status === ServiceStatus.NOT_AVAILABLE &&
             service.numberOfPlaces >= 1
@@ -333,6 +332,56 @@ export class ReservationService {
     } catch (error) {
       throw new BadRequestException(
         `Failed to get reservation statistics: ${error.message}`,
+      );
+    }
+  }
+
+  async getMentorServiceReservations(mentorId: string) {
+    try {
+      const mentorServices = await this.serviceModel
+        .find({
+          user: new Types.ObjectId(mentorId),
+        })
+        .lean()
+        .exec();
+      console.log(mentorServices);
+      if (!mentorServices || mentorServices.length === 0) {
+        return [];
+      }
+
+      const serviceIds = mentorServices.map((service) => service._id);
+
+      const reservations = await this.reservationModel
+        .find({
+          service: { $in: serviceIds },
+        })
+        .populate('user', '_id fullName email')
+        .populate('service', '_id name price description')
+        .lean()
+        .exec();
+
+      return reservations.map((reservation) => ({
+        ...reservation,
+        _id: reservation._id.toString(),
+        user: reservation.user
+          ? {
+              _id: reservation.user._id.toString(),
+              fullName: (reservation.user as any).fullName,
+              email: (reservation.user as any).email,
+            }
+          : null,
+        service: reservation.service
+          ? {
+              _id: reservation.service._id.toString(),
+              name: (reservation.service as any).name,
+              price: (reservation.service as any).price,
+              description: (reservation.service as any).description,
+            }
+          : null,
+      }));
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to retrieve mentor service reservations: ${error.message}`,
       );
     }
   }

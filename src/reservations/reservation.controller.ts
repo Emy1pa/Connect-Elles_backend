@@ -76,4 +76,10 @@ export class ReservationController {
   async getReservationStatistics(@Param('userId') userId: string) {
     return this.reservationService.getReservationStatistics(userId);
   }
+  @Get('mentor/:mentorId')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.MENTOR)
+  async getMentorServiceReservations(@Param('mentorId') mentorId: string) {
+    return this.reservationService.getMentorServiceReservations(mentorId);
+  }
 }
