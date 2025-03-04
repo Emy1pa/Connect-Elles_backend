@@ -142,4 +142,15 @@ export class FavoriteService {
       );
     }
   }
+
+  async getAdminStatistics() {
+    try {
+      const count = await this.favoriteModel.countDocuments();
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count favorites: ${error.message}`,
+      );
+    }
+  }
 }

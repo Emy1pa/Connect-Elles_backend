@@ -216,4 +216,12 @@ export class BlogsService {
       throw new BadRequestException(`Failed to count blogs: ${error.message}`);
     }
   }
+  async getAdminStatistics() {
+    try {
+      const count = await this.blogsModel.countDocuments();
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(`Failed to count blogs: ${error.message}`);
+    }
+  }
 }

@@ -85,4 +85,11 @@ export class ServicesController {
   async getServicesStatistics(@Param('mentorId') mentorId: string) {
     return this.servicesService.getServicesCount(mentorId);
   }
+
+  @Get('admin/statistics')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getAdminStatistics() {
+    return this.servicesService.getAdminStatistics();
+  }
 }

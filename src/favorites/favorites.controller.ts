@@ -63,4 +63,10 @@ export class FavoriteController {
   async getMentorFavorisStatistics(@Param('mentorId') mentorId: string) {
     return this.favoriteService.getMentorFavoriteCount(mentorId);
   }
+  @Get('admin/statistics')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getAdminStatistics() {
+    return this.favoriteService.getAdminStatistics();
+  }
 }
