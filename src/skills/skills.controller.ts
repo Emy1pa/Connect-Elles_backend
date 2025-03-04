@@ -62,4 +62,11 @@ export class SkillsController {
   async getSkillStatistics(@Param('mentorId') mentorId: string) {
     return this.skillsService.getSkillCount(mentorId);
   }
+
+  @Get('admin/statistics')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getAdminStatistics() {
+    return this.skillsService.getAdminStatistics();
+  }
 }

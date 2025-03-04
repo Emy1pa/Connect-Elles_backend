@@ -436,4 +436,14 @@ export class ReservationService {
       );
     }
   }
+  async getAdminStatistics() {
+    try {
+      const count = await this.reservationModel.countDocuments();
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count reservations: ${error.message}`,
+      );
+    }
+  }
 }

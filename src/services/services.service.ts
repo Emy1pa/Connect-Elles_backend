@@ -206,4 +206,13 @@ export class ServicesService {
       );
     }
   }
+
+  async getAdminStatistics() {
+    try {
+      const count = await this.servicesModel.countDocuments();
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(`Failed to count users: ${error.message}`);
+    }
+  }
 }

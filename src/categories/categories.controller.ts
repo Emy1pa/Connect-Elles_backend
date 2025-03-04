@@ -53,4 +53,11 @@ export class CategoriesController {
   public deleteCategory(@Param('id') id: string) {
     return this.categoriesService.deleteCategory(id);
   }
+
+  @Get('admin/statistics')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getAdminStatistics() {
+    return this.categoriesService.getAdminStatistics();
+  }
 }

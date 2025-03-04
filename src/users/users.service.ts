@@ -76,12 +76,6 @@ export class UsersService {
 
   public async delete(userId: string, payload: JWTPayloadType) {
     const user = await this.getCurrentUser(userId);
-
-    // const payloadId =
-    //   typeof payload.id === 'string'
-    //     ? new Types.ObjectId(payload.id)
-    //     : payload.id;
-
     if (
       user._id.toString() === payload.id.toString() ||
       payload.userRole === UserRole.ADMIN
@@ -106,6 +100,32 @@ export class UsersService {
       unlinkSync(imagePath);
       user.profileImage = null;
       return user.save();
+    }
+  }
+
+  public async usersStatistics() {
+    try {
+      const totalCount = await this.userModel.countDocuments();
+      const mentorCount = await this.userModel.countDocuments({
+        userRole: UserRole.MENTOR,
+      });
+      const userCount = await this.userModel.countDocuments({
+        userRole: UserRole.NORMAL_USER,
+      });
+      const adminCount = await this.userModel.countDocuments({
+        userRole: UserRole.ADMIN,
+      });
+
+      return {
+        total: totalCount,
+        admin: adminCount,
+        user: userCount,
+        mentor: mentorCount,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to get users statistics: ${error.message}`,
+      );
     }
   }
 }

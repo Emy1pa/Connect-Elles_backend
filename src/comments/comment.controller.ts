@@ -84,4 +84,11 @@ export class CommentController {
   async getMentorCommentsStatistics(@Param('mentorId') mentorId: string) {
     return this.commentService.getMentorCommentCount(mentorId);
   }
+
+  @Get('admin/statistics')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getAdminStatistics() {
+    return this.commentService.getAdminStatistics();
+  }
 }

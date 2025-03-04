@@ -101,4 +101,15 @@ export class CategoriesService {
       throw new Error('Failed to delete category');
     }
   }
+
+  async getAdminStatistics() {
+    try {
+      const count = await this.categoriesModel.countDocuments();
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count categories: ${error.message}`,
+      );
+    }
+  }
 }

@@ -86,4 +86,11 @@ export class UsersController {
   ) {
     return this.usersService.delete(id, payload);
   }
+
+  @Get('admin/statistics')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getUsersStatistics() {
+    return this.usersService.usersStatistics();
+  }
 }

@@ -310,4 +310,14 @@ export class CommentService {
       );
     }
   }
+  async getAdminStatistics() {
+    try {
+      const count = await this.commentModel.countDocuments();
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count comments: ${error.message}`,
+      );
+    }
+  }
 }

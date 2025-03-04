@@ -104,4 +104,12 @@ export class SkillsService {
       throw new BadRequestException(`Failed to count skills: ${error.message}`);
     }
   }
+  async getAdminStatistics() {
+    try {
+      const count = await this.skillsModel.countDocuments();
+      return { count };
+    } catch (error) {
+      throw new BadRequestException(`Failed to count skills: ${error.message}`);
+    }
+  }
 }

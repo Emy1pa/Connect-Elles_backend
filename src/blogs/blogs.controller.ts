@@ -93,4 +93,11 @@ export class BlogsController {
   async getFavorisStatistics(@Param('mentorId') mentorId: string) {
     return this.blogsService.getBlogsCount(mentorId);
   }
+
+  @Get('admin/statistics')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getAdminStatistics() {
+    return this.blogsService.getAdminStatistics();
+  }
 }
