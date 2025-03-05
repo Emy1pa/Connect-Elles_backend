@@ -29,7 +29,7 @@ export class Service {
     set: (value: number) => parseFloat(value.toFixed(2)),
   })
   price: number;
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true, minlength: 1 })
   numberOfPlaces: number;
   @Prop({
     type: Types.ObjectId,
