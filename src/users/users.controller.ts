@@ -23,7 +23,6 @@ import { UserRole } from 'src/utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Types } from 'mongoose';
 import { ClassSerializerInterceptor } from '@nestjs/common';
 
 @Controller('api/users')
@@ -92,5 +91,12 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   async getUsersStatistics() {
     return this.usersService.usersStatistics();
+  }
+
+  @Get('mentors')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserRole.ADMIN)
+  public async getMentors() {
+    return this.usersService.getMentors();
   }
 }

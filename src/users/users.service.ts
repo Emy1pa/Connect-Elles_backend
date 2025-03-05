@@ -128,4 +128,17 @@ export class UsersService {
       );
     }
   }
+
+  public async getMentors() {
+    const mentors = await this.userModel
+      .find({ userRole: UserRole.MENTOR })
+      .select('_id fullName email profileImage')
+      .lean()
+      .exec();
+    mentors.forEach((mentor) => {
+      mentor._id = mentor._id.toString();
+    });
+
+    return mentors;
+  }
 }
