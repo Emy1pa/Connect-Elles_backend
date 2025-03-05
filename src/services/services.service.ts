@@ -215,4 +215,29 @@ export class ServicesService {
       throw new BadRequestException(`Failed to count users: ${error.message}`);
     }
   }
+
+  public async getMentorServices(mentorId: string) {
+    try {
+      const services = await this.servicesModel
+        .find({ user: new Types.ObjectId(mentorId) })
+        .populate('category', '_id title')
+        .populate('user', '_id fullName')
+        .lean()
+        .exec();
+      return services.map((service) => ({
+        ...service,
+        _id: service._id.toString(),
+        user: {
+          _id: (service.user as any)._id.toString(),
+          fullName: (service.user as any).fullName,
+        },
+        category: {
+          _id: (service.category as any)._id.toString(),
+          title: (service.category as any).title,
+        },
+      }));
+    } catch (error) {
+      throw new Error('Failed to retrieve services');
+    }
+  }
 }

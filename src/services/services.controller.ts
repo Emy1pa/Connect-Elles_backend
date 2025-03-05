@@ -92,4 +92,9 @@ export class ServicesController {
   async getAdminStatistics() {
     return this.servicesService.getAdminStatistics();
   }
+
+  @Get('mentor/:mentorId')
+  async getServicesByMentor(@Param('mentorId') mentorId: string) {
+    return this.servicesService.getMentorServices(mentorId);
+  }
 }

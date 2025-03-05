@@ -35,7 +35,7 @@ export class CreateServiceDto {
   price: number;
   @IsNumber()
   @IsNotEmpty()
-  @Min(0)
+  @Min(1)
   @Transform(({ value }) => Number(value))
   numberOfPlaces: number;
   @IsOptional()
