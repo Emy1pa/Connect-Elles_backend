@@ -69,4 +69,9 @@ export class SkillsController {
   async getAdminStatistics() {
     return this.skillsService.getAdminStatistics();
   }
+
+  @Get('mentor/:mentorId')
+  async getSkillsByMentor(@Param('mentorId') mentorId: string) {
+    return this.skillsService.getSkillsByMentor(mentorId);
+  }
 }

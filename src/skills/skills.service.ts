@@ -112,4 +112,21 @@ export class SkillsService {
       throw new BadRequestException(`Failed to count skills: ${error.message}`);
     }
   }
+
+  public async getSkillsByMentor(mentorId: string) {
+    try {
+      const skills = await this.skillsModel
+        .find({ user: new Types.ObjectId(mentorId) })
+        .populate('user')
+        .lean()
+        .exec();
+      return skills.map((skill) => ({
+        ...skill,
+        _id: skill._id.toString(),
+        user: skill.user ? (skill.user as any)._id.toString() : null,
+      }));
+    } catch (error) {
+      throw new Error('Failed to retrieve skills');
+    }
+  }
 }
