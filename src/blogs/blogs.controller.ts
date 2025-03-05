@@ -100,4 +100,9 @@ export class BlogsController {
   async getAdminStatistics() {
     return this.blogsService.getAdminStatistics();
   }
+
+  @Get('mentor/:mentorId')
+  async getBlogsByMentor(@Param('mentorId') mentorId: string) {
+    return this.blogsService.getBlogsByMentor(mentorId);
+  }
 }

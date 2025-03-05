@@ -62,6 +62,7 @@ export class BlogsService {
       throw new Error('Failed to retrieve blogs');
     }
   }
+
   public async getAllPublishedBlogs() {
     try {
       const blogs = await this.blogsModel
@@ -182,6 +183,32 @@ export class BlogsService {
       return { message: 'Blog has been deleted successfully' };
     } catch (error) {
       throw new Error('Failed to delete blog');
+    }
+  }
+  public async getBlogsByMentor(mentorId: string) {
+    try {
+      const blogs = await this.blogsModel
+        .find({ user: new Types.ObjectId(mentorId) })
+        .populate('category', '_id title')
+        .populate('user', '_id fullName')
+        .lean()
+        .exec();
+
+      return blogs.map((blog) => ({
+        ...blog,
+        _id: blog._id.toString(),
+        user: {
+          _id: blog.user._id.toString(),
+          fullName: (blog.user as any).fullName,
+        },
+        category: {
+          _id: blog.category._id.toString(),
+          title: (blog.category as any).title,
+        },
+      }));
+    } catch (error) {
+      console.error('Error fetching mentor blogs:', error);
+      throw new Error('Failed to retrieve mentor blogs');
     }
   }
 
