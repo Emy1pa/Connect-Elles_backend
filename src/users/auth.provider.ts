@@ -45,6 +45,7 @@ export class AuthProvider {
       return userResponse;
     } catch (error) {
       console.log('Registration failed', error);
+      throw error;
     }
   }
 

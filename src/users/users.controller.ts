@@ -94,8 +94,6 @@ export class UsersController {
   }
 
   @Get('mentors')
-  @UseGuards(AuthRolesGuard)
-  @Roles(UserRole.ADMIN)
   public async getMentors() {
     return this.usersService.getMentors();
   }

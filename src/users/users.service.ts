@@ -132,13 +132,12 @@ export class UsersService {
   public async getMentors() {
     const mentors = await this.userModel
       .find({ userRole: UserRole.MENTOR })
-      .select('_id fullName email profileImage')
+      .select('_id fullName email profileImage username')
       .lean()
       .exec();
-    mentors.forEach((mentor) => {
-      mentor._id = mentor._id.toString();
-    });
-
-    return mentors;
+    return mentors.map((mentor) => ({
+      ...mentor,
+      _id: mentor._id.toString(),
+    }));
   }
 }

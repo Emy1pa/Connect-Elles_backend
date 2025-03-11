@@ -135,7 +135,7 @@ export class FavoriteService {
       });
 
       console.log(totalCount);
-      return { total: totalCount };
+      return { count: totalCount };
     } catch (error) {
       throw new BadRequestException(
         `Failed to count favorites: ${error.message}`,
