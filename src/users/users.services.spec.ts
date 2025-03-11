@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { AuthProvider } from './auth.provider';
+import { ForbiddenException } from '@nestjs/common';
+import { UserRole } from 'src/utils/enums';
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -74,5 +76,63 @@ describe('UsersService', () => {
         fullName: 'User Two',
       },
     ]);
+  });
+  describe('delete', () => {
+    const userId = '123';
+    const mockUser = {
+      _id: { toString: () => userId },
+      username: 'testuser',
+      email: 'test@example.com',
+    };
+
+    beforeEach(() => {
+      mockUserModel.findByIdAndDelete = jest.fn().mockResolvedValue(true);
+
+      usersService.getCurrentUser = jest.fn().mockResolvedValue(mockUser);
+    });
+
+    it('should allow users to delete their own account', async () => {
+      const payload = {
+        id: userId,
+        userRole: UserRole.NORMAL_USER,
+      };
+
+      const result = await usersService.delete(userId, payload);
+
+      expect(usersService.getCurrentUser).toHaveBeenCalledWith(userId);
+      expect(mockUserModel.findByIdAndDelete).toHaveBeenCalledWith(
+        mockUser._id,
+      );
+      expect(result).toEqual({ message: 'User has been deleted successfully' });
+    });
+
+    it('should allow admins to delete any user account', async () => {
+      const adminPayload = {
+        id: 'admin123',
+        userRole: UserRole.ADMIN,
+      };
+
+      const result = await usersService.delete(userId, adminPayload);
+
+      expect(usersService.getCurrentUser).toHaveBeenCalledWith(userId);
+      expect(mockUserModel.findByIdAndDelete).toHaveBeenCalledWith(
+        mockUser._id,
+      );
+      expect(result).toEqual({ message: 'User has been deleted successfully' });
+    });
+
+    it("should throw ForbiddenException if a user tries to delete another user's account", async () => {
+      const otherUserPayload = {
+        id: 'other456',
+        userRole: UserRole.NORMAL_USER,
+      };
+
+      await expect(
+        usersService.delete(userId, otherUserPayload),
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(usersService.getCurrentUser).toHaveBeenCalledWith(userId);
+      expect(mockUserModel.findByIdAndDelete).not.toHaveBeenCalled();
+    });
   });
 });
