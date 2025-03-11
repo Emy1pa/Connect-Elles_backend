@@ -22,7 +22,7 @@ export class CommentController {
 
   @Post(':userId/:blogId')
   @UseGuards(AuthRolesGuard)
-  @Roles(UserRole.NORMAL_USER)
+  @Roles(UserRole.NORMAL_USER, UserRole.MENTOR)
   async createComment(
     @Body() createCommentDto: CreateCommentDto,
     @Param('blogId') blogId: string,

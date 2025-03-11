@@ -11,8 +11,7 @@ export enum BlogStatus {
 }
 export enum ServiceStatus {
   AVAILABLE = 'AVAILABLE',
-  INACTIVE = 'INACTIVE',
-  EXPIRED = 'EXPIRED',
+  ARCHIVED = 'ARCHIVED',
   NOT_AVAILABLE = 'NOT-AVAILABLE',
 }
 
