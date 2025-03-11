@@ -6,11 +6,11 @@ import { AuthProvider } from './auth.provider';
 import { UserRole } from 'src/utils/enums';
 import { JwtService } from '@nestjs/jwt';
 
-describe('AuthProvider - Register', () => {
+describe('AuthProvider', () => {
   let service: AuthProvider;
   let userModel: any;
   const mockJwtService = {
-    sign: jest.fn().mockReturnValue('mockToken'),
+    signAsync: jest.fn().mockResolvedValue('mockToken'),
   };
 
   const findOneMock = jest.fn();
@@ -102,5 +102,66 @@ describe('AuthProvider - Register', () => {
     );
 
     expect(findOneMock).toHaveBeenCalledWith({ email: registerDto.email });
+  });
+
+  it('should login user successfully', async () => {
+    const loginDto = {
+      email: 'test@example.com',
+      password: 'securePassword',
+    };
+
+    const hashedPassword = await bcrypt.hash(loginDto.password, 10);
+
+    findOneMock.mockResolvedValue({
+      _id: 'mockId123',
+      email: loginDto.email,
+      password: hashedPassword,
+      userRole: UserRole.NORMAL_USER,
+    });
+
+    const compareSpy = jest
+      .spyOn(bcrypt, 'compare')
+      .mockImplementation(() => Promise.resolve(true));
+
+    const result = await service.login(loginDto);
+
+    expect(findOneMock).toHaveBeenCalledWith({ email: loginDto.email });
+    expect(compareSpy).toHaveBeenCalledWith(loginDto.password, hashedPassword);
+    expect(result).toEqual({ accessToken: 'mockToken' });
+  });
+
+  it('should throw error if email does not exist', async () => {
+    const loginDto = {
+      email: 'wrong@example.com',
+      password: 'securePassword',
+    };
+
+    findOneMock.mockResolvedValue(null);
+
+    await expect(service.login(loginDto)).rejects.toThrow(BadRequestException);
+    expect(findOneMock).toHaveBeenCalledWith({ email: loginDto.email });
+  });
+
+  it('should throw error if password is incorrect', async () => {
+    const loginDto = {
+      email: 'test@example.com',
+      password: 'wrongPassword',
+    };
+
+    const hashedPassword = await bcrypt.hash('correctPassword', 10);
+
+    findOneMock.mockResolvedValue({
+      _id: 'mockId123',
+      email: loginDto.email,
+      password: hashedPassword,
+      userRole: UserRole.NORMAL_USER,
+    });
+
+    const compareSpy = jest
+      .spyOn(bcrypt, 'compare')
+      .mockImplementation(() => Promise.resolve(false));
+
+    await expect(service.login(loginDto)).rejects.toThrow(BadRequestException);
+    expect(compareSpy).toHaveBeenCalledWith(loginDto.password, hashedPassword);
   });
 });
