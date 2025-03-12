@@ -152,4 +152,62 @@ describe('SkillsService', () => {
       expect(findMock).toHaveBeenCalled();
     });
   });
+  describe('deleteSkill', () => {
+    let findByIdMock: jest.Mock;
+    let deleteOneMock: jest.Mock;
+
+    beforeEach(() => {
+      findByIdMock = jest.fn();
+      deleteOneMock = jest.fn();
+
+      skillModel.findById = findByIdMock;
+      skillModel.deleteOne = deleteOneMock;
+    });
+
+    it('should delete a skill successfully', async () => {
+      const mockSkill = {
+        _id: mockSkillId,
+        title: 'JavaScript Skill',
+        description: 'Advanced JavaScript Skill',
+        user: mockUserId,
+      };
+
+      findByIdMock.mockResolvedValue(mockSkill);
+      deleteOneMock.mockResolvedValue({ deletedCount: 1 });
+
+      const result = await service.deleteSkill(mockSkillId);
+
+      expect(findByIdMock).toHaveBeenCalledWith(mockSkillId);
+      expect(deleteOneMock).toHaveBeenCalledWith({ _id: mockSkillId });
+      expect(result).toEqual({ message: 'Skill deleted successfully' });
+    });
+
+    it('should throw NotFoundException if skill is not found', async () => {
+      findByIdMock.mockResolvedValue(null);
+
+      await expect(service.deleteSkill(mockSkillId)).rejects.toThrow(
+        'Skill not found',
+      );
+      expect(findByIdMock).toHaveBeenCalledWith(mockSkillId);
+      expect(deleteOneMock).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if skill deletion fails', async () => {
+      const mockSkill = {
+        _id: mockSkillId,
+        title: 'JavaScript Skill',
+        description: 'Advanced JavaScript Skill',
+        user: mockUserId,
+      };
+
+      findByIdMock.mockResolvedValue(mockSkill);
+      deleteOneMock.mockRejectedValue(new Error('Database error'));
+
+      await expect(service.deleteSkill(mockSkillId)).rejects.toThrow(
+        'Failed to delete skill',
+      );
+      expect(findByIdMock).toHaveBeenCalledWith(mockSkillId);
+      expect(deleteOneMock).toHaveBeenCalledWith({ _id: mockSkillId });
+    });
+  });
 });
