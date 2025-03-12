@@ -12,7 +12,31 @@ describe('SkillsService', () => {
   const mockUserId = new Types.ObjectId().toString();
 
   const createMock = jest.fn();
-
+  const findMock = jest.fn();
+  const mockSkills = [
+    {
+      _id: mockSkillId,
+      title: 'JavaScript Skill',
+      description: 'Advanced JavaScript Skill',
+      user: {
+        _id: mockUserId,
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        userRole: 'user',
+      },
+    },
+    {
+      _id: new Types.ObjectId().toString(),
+      title: 'Python Skill',
+      description: 'Basic Python Skill',
+      user: {
+        _id: new Types.ObjectId().toString(),
+        fullName: 'Jane Smith',
+        email: 'jane@example.com',
+        userRole: 'user',
+      },
+    },
+  ];
   const MockSkillModel = jest.fn().mockImplementation(() => ({
     toObject: jest.fn().mockReturnValue({
       _id: mockSkillId,
@@ -30,6 +54,7 @@ describe('SkillsService', () => {
           provide: getModelToken('Skill'),
           useValue: Object.assign(MockSkillModel, {
             create: createMock,
+            find: findMock,
           }),
         },
       ],
@@ -90,6 +115,41 @@ describe('SkillsService', () => {
         ...createSkillDto,
         user: new Types.ObjectId(mockUserId),
       });
+    });
+  });
+  describe('getAllSkills', () => {
+    it('should return all skills successfully', async () => {
+      findMock.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockSkills),
+      });
+
+      const result = await service.getAllSkills();
+
+      expect(findMock).toHaveBeenCalled();
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        ...mockSkills[0],
+        user: mockSkills[0].user._id.toString(),
+      });
+      expect(result[1]).toEqual({
+        ...mockSkills[1],
+        user: mockSkills[1].user._id.toString(),
+      });
+    });
+
+    it('should throw an error if skills retrieval fails', async () => {
+      findMock.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockRejectedValue(new Error('Database error')),
+      });
+
+      await expect(service.getAllSkills()).rejects.toThrow(
+        'Failed to retrieve skills',
+      );
+      expect(findMock).toHaveBeenCalled();
     });
   });
 });
