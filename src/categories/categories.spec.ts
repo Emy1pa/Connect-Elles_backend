@@ -144,4 +144,60 @@ describe('CategoriesService', () => {
       expect(findMock).toHaveBeenCalled();
     });
   });
+  describe('deleteSkill', () => {
+    let findByIdMock: jest.Mock;
+    let deleteOneMock: jest.Mock;
+
+    beforeEach(() => {
+      findByIdMock = jest.fn();
+      deleteOneMock = jest.fn();
+
+      categoryModel.findById = findByIdMock;
+      categoryModel.deleteOne = deleteOneMock;
+    });
+
+    it('should delete a category successfully', async () => {
+      const mockSkill = {
+        _id: mockCategoryId,
+        title: 'Health Category',
+        user: mockUserId,
+      };
+
+      findByIdMock.mockResolvedValue(mockSkill);
+      deleteOneMock.mockResolvedValue({ deletedCount: 1 });
+
+      const result = await category.deleteCategory(mockCategoryId);
+
+      expect(findByIdMock).toHaveBeenCalledWith(mockCategoryId);
+      expect(deleteOneMock).toHaveBeenCalledWith({ _id: mockCategoryId });
+      expect(result).toEqual({ message: 'Category deleted successfully' });
+    });
+
+    it('should throw NotFoundException if skill is not found', async () => {
+      findByIdMock.mockResolvedValue(null);
+
+      await expect(category.deleteCategory(mockCategoryId)).rejects.toThrow(
+        'Category not found',
+      );
+      expect(findByIdMock).toHaveBeenCalledWith(mockCategoryId);
+      expect(deleteOneMock).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if skill deletion fails', async () => {
+      const mockSkill = {
+        _id: mockCategoryId,
+        title: 'Health Category',
+        user: mockUserId,
+      };
+
+      findByIdMock.mockResolvedValue(mockSkill);
+      deleteOneMock.mockRejectedValue(new Error('Database error'));
+
+      await expect(category.deleteCategory(mockCategoryId)).rejects.toThrow(
+        'Failed to delete category',
+      );
+      expect(findByIdMock).toHaveBeenCalledWith(mockCategoryId);
+      expect(deleteOneMock).toHaveBeenCalledWith({ _id: mockCategoryId });
+    });
+  });
 });
