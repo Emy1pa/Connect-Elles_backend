@@ -109,4 +109,39 @@ describe('CategoriesService', () => {
       });
     });
   });
+  describe('getAllCategories', () => {
+    it('should return all categories successfully', async () => {
+      findMock.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockCategories),
+      });
+
+      const result = await category.getAllCategories();
+
+      expect(findMock).toHaveBeenCalled();
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        ...mockCategories[0],
+        user: mockCategories[0].user._id.toString(),
+      });
+      expect(result[1]).toEqual({
+        ...mockCategories[1],
+        user: mockCategories[1].user._id.toString(),
+      });
+    });
+
+    it('should throw an error if categories retrieval fails', async () => {
+      findMock.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockRejectedValue(new Error('Database error')),
+      });
+
+      await expect(category.getAllCategories()).rejects.toThrow(
+        'Failed to retrieve categories',
+      );
+      expect(findMock).toHaveBeenCalled();
+    });
+  });
 });
