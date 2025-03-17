@@ -6,15 +6,15 @@ import { BlogStatus } from 'src/utils/enums';
 import { Types } from 'mongoose';
 
 describe('BlogsService', () => {
-  let service: BlogsService;
+  let blog: BlogsService;
   let blogModel: any;
-
   const mockBlogId = new Types.ObjectId().toString();
   const mockUserId = new Types.ObjectId().toString();
   const mockCategoryId = new Types.ObjectId().toString();
 
   const createMock = jest.fn();
   const saveMock = jest.fn();
+  const findMock = jest.fn();
 
   const mockBlogs = [
     {
@@ -25,6 +25,15 @@ describe('BlogsService', () => {
       status: BlogStatus.PUBLISHED,
       user: { _id: mockUserId },
       category: { _id: mockCategoryId },
+    },
+    {
+      _id: new Types.ObjectId().toString(),
+      title: 'Health Blog',
+      summary: 'This is a blog about health.',
+      content: 'This is a blog about health.',
+      status: BlogStatus.PUBLISHED,
+      user: { _id: new Types.ObjectId().toString() },
+      category: { _id: new Types.ObjectId().toString() },
     },
   ];
 
@@ -42,12 +51,13 @@ describe('BlogsService', () => {
           provide: getModelToken('Blog'),
           useValue: Object.assign(MockBlogModel, {
             create: createMock,
+            find: findMock,
           }),
         },
       ],
     }).compile();
 
-    service = module.get<BlogsService>(BlogsService);
+    blog = module.get<BlogsService>(BlogsService);
     blogModel = module.get(getModelToken('Blog'));
   });
 
@@ -75,7 +85,7 @@ describe('BlogsService', () => {
 
       createMock.mockResolvedValue(mockCreatedBlog);
 
-      const result = await service.createBlog(
+      const result = await blog.createBlog(
         createBlogDto,
         mockUserId,
         mockCategoryId,
@@ -111,8 +121,43 @@ describe('BlogsService', () => {
       createMock.mockRejectedValue(new Error('Database error'));
 
       await expect(
-        service.createBlog(createBlogDto, mockUserId, mockCategoryId),
+        blog.createBlog(createBlogDto, mockUserId, mockCategoryId),
       ).rejects.toThrow('Failed to create blog');
+    });
+  });
+  describe('getAllBlogs', () => {
+    it('should return all blogs successfully', async () => {
+      findMock.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockBlogs),
+      });
+
+      const result = await blog.getAllBlogs();
+
+      expect(findMock).toHaveBeenCalled();
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        ...mockBlogs[0],
+        user: { _id: mockBlogs[0].user._id.toString() },
+      });
+      expect(result[1]).toEqual({
+        ...mockBlogs[1],
+        user: { _id: mockBlogs[1].user._id.toString() },
+      });
+    });
+
+    it('should throw an error if blogs retrieval fails', async () => {
+      findMock.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockRejectedValue(new Error('Database error')),
+      });
+
+      await expect(blog.getAllBlogs()).rejects.toThrow(
+        'Failed to retrieve blogs',
+      );
+      expect(findMock).toHaveBeenCalled();
     });
   });
 });
