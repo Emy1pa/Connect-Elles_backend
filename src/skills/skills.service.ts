@@ -89,6 +89,9 @@ export class SkillsService {
       await this.skillsModel.deleteOne({ _id: id });
       return { message: 'Skill deleted successfully' };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new Error('Failed to delete skill');
     }
   }
