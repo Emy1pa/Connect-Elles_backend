@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { SkillsService } from './skills.service';
 import { Types } from 'mongoose';
-import { title } from 'process';
 
 describe('SkillsService', () => {
   let service: SkillsService;
@@ -22,7 +21,7 @@ describe('SkillsService', () => {
         _id: mockUserId,
         fullName: 'John Doe',
         email: 'john@example.com',
-        userRole: 'user',
+        userRole: 'normal-user',
       },
     },
     {

@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
 import { Category, CategoryDocument } from './category.schema';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
@@ -35,16 +34,20 @@ export class CategoriesService {
     }
   }
   public async getAllCategories() {
-    const categories = await this.categoriesModel
-      .find()
-      .populate('user')
-      .lean()
-      .exec();
-    return categories.map((category) => ({
-      ...category,
-      _id: category._id.toString(),
-      user: category.user ? (category.user as any)._id.toString() : null,
-    }));
+    try {
+      const categories = await this.categoriesModel
+        .find()
+        .populate('user')
+        .lean()
+        .exec();
+      return categories.map((category) => ({
+        ...category,
+        _id: category._id.toString(),
+        user: category.user ? (category.user as any)._id.toString() : null,
+      }));
+    } catch (error) {
+      throw new Error('Failed to retrieve categories');
+    }
   }
   public async getCategoryBy(id: string) {
     try {
@@ -98,6 +101,9 @@ export class CategoriesService {
       await this.categoriesModel.deleteOne({ _id: id });
       return { message: 'Category deleted successfully' };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new Error('Failed to delete category');
     }
   }
