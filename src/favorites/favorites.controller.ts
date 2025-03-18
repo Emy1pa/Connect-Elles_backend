@@ -69,4 +69,11 @@ export class FavoriteController {
   async getAdminStatistics() {
     return this.favoriteService.getAdminStatistics();
   }
+
+  @Get('blog/favorites/:blogId')
+  // @UseGuards(AuthRolesGuard)
+  // @Roles(UserRole.NORMAL_USER)
+  async getBlogFavorites(@Param('blogId') blogId: string) {
+    return this.favoriteService.getBlogFavoriteCount(blogId);
+  }
 }

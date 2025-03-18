@@ -153,4 +153,29 @@ export class FavoriteService {
       );
     }
   }
+
+  async getBlogFavoriteCount(blogId: string) {
+    try {
+      const blog = await this.blogModel.findById(blogId);
+      if (!blog) {
+        throw new NotFoundException('Blog not found');
+      }
+
+      const blogObjectId = new Types.ObjectId(blogId);
+
+      const count = await this.favoriteModel.countDocuments({
+        blog: blogObjectId,
+      });
+
+      return {
+        blogId: blogId,
+        title: blog.title,
+        favoriteCount: count,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to count favorites for blog: ${error.message}`,
+      );
+    }
+  }
 }
