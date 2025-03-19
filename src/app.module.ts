@@ -40,7 +40,7 @@ import { ReservationModule } from './reservations/reservation.module';
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'images'),
+      rootPath: join(process.cwd(), `./images`),
       serveRoot: '/images',
     }),
   ],
