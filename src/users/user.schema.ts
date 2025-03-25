@@ -1,8 +1,7 @@
-import { Exclude, Type } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import { UserRole } from 'src/utils/enums';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
-import { Skill } from 'src/skills/skill.schema';
+import { Document } from 'mongoose';
 export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })

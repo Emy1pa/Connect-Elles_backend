@@ -8,7 +8,6 @@ import { Favorite, FavoriteDocument } from './favorite.schema';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from 'src/users/user.schema';
 import { Blog, BlogDocument } from 'src/blogs/blog.schema';
-import { FavoriteDto } from './dtos/favorite.dto';
 
 Injectable();
 export class FavoriteService {
@@ -37,7 +36,7 @@ export class FavoriteService {
           'This blog is already added to your favorites',
         );
       }
-      let newFavorite = await this.favoriteModel.create({
+      const newFavorite = await this.favoriteModel.create({
         user: new Types.ObjectId(userId),
         blog: new Types.ObjectId(blogId),
       });
@@ -48,6 +47,7 @@ export class FavoriteService {
         blog: newFavorite.blog.toString(),
       };
     } catch (error) {
+      console.log('error', error);
       throw new BadRequestException('Failed to add favorite');
     }
   }
@@ -60,6 +60,7 @@ export class FavoriteService {
       await this.favoriteModel.deleteOne({ _id: favoriteId });
       return { message: 'Favorite removed successfully' };
     } catch (error) {
+      console.log('error', error);
       throw new BadRequestException('Failed to remove favorite');
     }
   }
@@ -89,6 +90,7 @@ export class FavoriteService {
           : null,
       }));
     } catch (error) {
+      console.log('error', error);
       throw new BadRequestException('Failed to retrieve favorites');
     }
   }

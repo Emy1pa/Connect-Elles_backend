@@ -1,18 +1,17 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { ServiceStatus } from 'src/utils/enums';
 import { join } from 'path';
 import { unlinkSync } from 'fs';
-import { JWTPayloadType } from 'src/utils/types';
 import { Service, ServiceDocument } from './service.schema';
 import { CreateServiceDto } from './dtos/create-service.dto';
 import { UpdateServiceDto } from './dtos/update-blog.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { JWTPayloadType } from 'src/utils/types';
 
 @Injectable()
 export class ServicesService {
@@ -27,7 +26,7 @@ export class ServicesService {
   ) {
     try {
       const { serviceImage } = createService;
-      let newService = await this.servicesModel.create({
+      const newService = await this.servicesModel.create({
         ...createService,
         title: createService.title,
         description: createService.description,
@@ -47,6 +46,7 @@ export class ServicesService {
         category: newService.category.toString(),
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to create service');
     }
   }
@@ -71,6 +71,7 @@ export class ServicesService {
         },
       }));
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve services');
     }
   }
@@ -103,6 +104,7 @@ export class ServicesService {
           : null,
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve service');
     }
   }
@@ -166,6 +168,7 @@ export class ServicesService {
       await this.servicesModel.deleteOne({ _id: serviceId });
       return { message: 'Service has been deleted successfully' };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to delete service');
     }
   }
@@ -188,6 +191,7 @@ export class ServicesService {
         );
         return { message: 'Service image removed successfully' };
       } catch (error) {
+        console.log('error', error);
         throw new Error('Failed to remove service image');
       }
     }
@@ -237,6 +241,7 @@ export class ServicesService {
         },
       }));
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve services');
     }
   }

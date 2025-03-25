@@ -12,6 +12,7 @@ import { unlinkSync } from 'fs';
 import { JWTPayloadType } from 'src/utils/types';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { log } from 'console';
 
 @Injectable()
 export class BlogsService {
@@ -26,7 +27,7 @@ export class BlogsService {
   ) {
     try {
       const { blogImage } = createBlog;
-      let newBlog = await this.blogsModel.create({
+      const newBlog = await this.blogsModel.create({
         ...createBlog,
         title: createBlog.title,
         content: createBlog.content,
@@ -42,6 +43,7 @@ export class BlogsService {
         category: newBlog.category.toString(),
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to create blog');
     }
   }
@@ -59,6 +61,7 @@ export class BlogsService {
         },
       }));
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve blogs');
     }
   }
@@ -116,6 +119,7 @@ export class BlogsService {
           : null,
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve blog');
     }
   }
@@ -170,6 +174,7 @@ export class BlogsService {
       };
       return blogResponse;
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to update blog');
     }
   }
@@ -182,6 +187,7 @@ export class BlogsService {
       await this.blogsModel.deleteOne({ _id: blogId });
       return { message: 'Blog has been deleted successfully' };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to delete blog');
     }
   }
@@ -228,6 +234,8 @@ export class BlogsService {
         );
         return { message: 'Blog image removed successfully' };
       } catch (error) {
+        console.log('error', error);
+
         throw new Error('Failed to remove blog image');
       }
     }

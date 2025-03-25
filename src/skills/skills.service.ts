@@ -27,6 +27,7 @@ export class SkillsService {
         user: newSkill.user.toString(),
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to create skill');
     }
   }
@@ -43,6 +44,7 @@ export class SkillsService {
         user: skill.user ? (skill.user as any)._id.toString() : null,
       }));
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve skills');
     }
   }
@@ -129,6 +131,7 @@ export class SkillsService {
         user: skill.user ? (skill.user as any)._id.toString() : null,
       }));
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve skills');
     }
   }

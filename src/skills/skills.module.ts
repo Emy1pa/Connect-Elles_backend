@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SkillsController } from './skills.controller';
 import { SkillsService } from './skills.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Skill, SkillSchema } from './skill.schema';
 import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';

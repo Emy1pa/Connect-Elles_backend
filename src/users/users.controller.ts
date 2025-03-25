@@ -30,7 +30,6 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiConsumes,
-  ApiBody,
   ApiParam,
 } from '@nestjs/swagger';
 @ApiTags('Users')

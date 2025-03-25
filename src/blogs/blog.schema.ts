@@ -1,5 +1,3 @@
-import { Category } from 'src/categories/category.schema';
-import { User } from 'src/users/user.schema';
 import { BlogStatus } from 'src/utils/enums';
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';

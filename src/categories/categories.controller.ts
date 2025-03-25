@@ -13,7 +13,6 @@ import { Roles } from 'src/users/decorators/user-role.decorator';
 import { UserRole } from 'src/utils/enums';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import { JWTPayloadType } from 'src/utils/types';
-import { ObjectId } from 'mongodb';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';

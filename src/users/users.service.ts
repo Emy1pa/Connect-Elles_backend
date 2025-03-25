@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { User, UserDocument } from './user.schema';
 import { RegisterDto } from './dtos/register.dto';
@@ -14,7 +13,7 @@ import { AuthProvider } from './auth.provider';
 import { join } from 'path';
 import { unlinkSync } from 'fs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {

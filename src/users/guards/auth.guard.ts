@@ -31,6 +31,7 @@ export class AuthGuard implements CanActivate {
         );
         request[CURRENT_USER_KEY] = payload;
       } catch (error) {
+        console.log('error', error);
         throw new UnauthorizedException('Access denied, invalid token');
       }
     } else {

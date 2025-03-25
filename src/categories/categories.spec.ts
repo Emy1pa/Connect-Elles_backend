@@ -3,7 +3,6 @@ import { getModelToken } from '@nestjs/mongoose';
 import { CategoriesService } from './categories.service';
 
 import { Types } from 'mongoose';
-import { CreateCategoryDto } from './dtos/create-category.dto';
 describe('CategoriesService', () => {
   let category: CategoriesService;
   let categoryModel: any;

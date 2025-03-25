@@ -10,7 +10,7 @@ import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from 'src/services/service.schema';
 import { CreateReservationDto } from './dtos/create-reservation.dto';
 import { luhnCheck } from 'src/utils/card-validator';
-import { ReservationStatus, ServiceStatus, UserRole } from 'src/utils/enums';
+import { ReservationStatus, ServiceStatus } from 'src/utils/enums';
 
 @Injectable()
 export class ReservationService {
@@ -54,7 +54,7 @@ export class ReservationService {
       }
       const lastFourDigits = createReservation.cardNumber.slice(-4);
       const maskCardNumber = `xxxx-xxxx-xxxx-${lastFourDigits}`;
-      let newReservation = await this.reservationModel.create({
+      const newReservation = await this.reservationModel.create({
         ...createReservation,
         cardNumber: maskCardNumber,
         status: ReservationStatus.PENDING,

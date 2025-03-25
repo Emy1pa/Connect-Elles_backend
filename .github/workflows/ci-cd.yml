@@ -3,10 +3,10 @@ name: CI for NestJS Project
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -26,6 +26,9 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: npm ci
+
+      - name: Run TypeScript type checking
+        run: npm run typescript:check
 
       # Lint the code
       - name: Run ESLint
