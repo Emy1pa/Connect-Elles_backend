@@ -86,6 +86,7 @@ export class CommentService {
         },
       }));
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve comments');
     }
   }
@@ -258,6 +259,7 @@ export class CommentService {
       await this.commentModel.deleteOne({ _id: commentId });
       return { message: 'Comment removed successfully' };
     } catch (error) {
+      console.log('error', error);
       throw new BadRequestException('Failed to remove comment');
     }
   }

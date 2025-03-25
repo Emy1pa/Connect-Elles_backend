@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { BlogStatus, ServiceStatus } from 'src/utils/enums';
+import { ServiceStatus } from 'src/utils/enums';
 import { Types } from 'mongoose';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dtos/create-service.dto';

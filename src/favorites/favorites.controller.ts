@@ -11,13 +11,7 @@ import { FavoriteService } from './favorites.service';
 import { AuthRolesGuard } from 'src/users/guards/auth-roles.guard';
 import { Roles } from 'src/users/decorators/user-role.decorator';
 import { UserRole } from 'src/utils/enums';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 @ApiTags('Favorites')
 @Controller('favorites')
 export class FavoriteController {

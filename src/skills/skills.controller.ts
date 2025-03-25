@@ -7,7 +7,6 @@ import {
   Post,
   Put,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { SkillsService } from './skills.service';
 import { AuthRolesGuard } from 'src/users/guards/auth-roles.guard';

@@ -9,7 +9,6 @@ async function bootstrap() {
     .setTitle('API Documentation')
     .setDescription("Documentation Swagger de l'application")
     .setVersion('1.0')
-    .addTag('Users')
     .addTag('Skills')
     .addTag('Services')
     .addTag('Reservations')
@@ -17,6 +16,8 @@ async function bootstrap() {
     .addTag('Comments')
     .addTag('Categories')
     .addTag('Blogs')
+    .addTag('Users')
+
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);

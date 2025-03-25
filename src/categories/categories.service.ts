@@ -30,6 +30,7 @@ export class CategoriesService {
         user: newCategory.user.toString(),
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to create category');
     }
   }
@@ -46,6 +47,7 @@ export class CategoriesService {
         user: category.user ? (category.user as any)._id.toString() : null,
       }));
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve categories');
     }
   }
@@ -68,6 +70,7 @@ export class CategoriesService {
         },
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to retrieve category');
     }
   }
@@ -88,6 +91,7 @@ export class CategoriesService {
         title: category.title,
       };
     } catch (error) {
+      console.log('error', error);
       throw new Error('Failed to update category');
     }
   }

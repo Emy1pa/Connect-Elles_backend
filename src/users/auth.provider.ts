@@ -22,7 +22,7 @@ export class AuthProvider {
       const userFromDb = await this.userModel.findOne({ email });
       if (userFromDb) throw new BadRequestException('User already registered');
       const hashedPassword = await this.HashPassword(password);
-      let newUser = new this.userModel({
+      const newUser = new this.userModel({
         username,
         fullName,
         email,
