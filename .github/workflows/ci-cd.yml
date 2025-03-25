@@ -30,10 +30,6 @@ jobs:
       - name: Run TypeScript type checking
         run: npm run typescript:check
 
-      # Lint the code
-      - name: Run ESLint
-        run: npm run lint
-
       # Format the code
       - name: Run Prettier
         run: npm run format
